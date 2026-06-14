@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Densidad – Física y Química ESO</title>
+  <style>
+    /* ── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      background: var(--bg-body);
+      color: var(--text-main);
+      transition: background 0.2s, color 0.2s;
+    }
+
+    /* ── Tema oscuro (por defecto) ──────────────────────── */
+    :root {
+      --bg-body:          #0a0c10;
+      --bg-panel:         #10141c;
+      --bg-card:          #161b24;
+      --bg-input:         #1c2230;
+      --bg-hover:         #202838;
+      --text-main:        #d0d8e8;
+      --text-muted:       #6878a0;
+      --text-label:       #8898b8;
+      --accent:           #00c8ff;
+      --accent-strong:    #40d8ff;
+      --accent-soft:      rgba(0,200,255,0.10);
+      --accent-border:    rgba(0,200,255,0.25);
+      --border-main:      #222a38;
+      --border-strong:    #2e3c52;
+      --success:          #34c782;
+      --success-bg:       rgba(52,199,130,0.10);
+      --success-border:   rgba(52,199,130,0.28);
+      --warning:          #f0a832;
+      --warning-bg:       rgba(240,168,50,0.10);
+      --warning-border:   rgba(240,168,50,0.28);
+      --danger:           #e84848;
+      --danger-bg:        rgba(232,72,72,0.10);
+      --danger-border:    rgba(232,72,72,0.28);
+      --col-a:            #4f8ef7;
+      --col-b:            #f7823c;
+      --col-a-bg:         rgba(79,142,247,0.10);
+      --col-b-bg:         rgba(247,130,60,0.10);
+      --col-a-border:     rgba(79,142,247,0.30);
+      --col-b-border:     rgba(247,130,60,0.30);
+      --panel-w:          370px;
+    }
+
+    /* ── Tema claro ─────────────────────────────────────── */
+    [data-theme="light"] {
+      --bg-body:          #eceff6;
+      --bg-panel:         #f5f7fc;
+      --bg-card:          #ffffff;
+      --bg-input:         #e8ebf4;
+      --bg-hover:         #dde2ee;
+      --text-main:        #1a2036;
+      --text-muted:       #6070a0;
+      --text-label:       #485880;
+      --accent:           #0088cc;
+      --accent-strong:    #0066aa;
+      --accent-soft:      rgba(0,136,204,0.10);
+      --accent-border:    rgba(0,136,204,0.30);
+      --border-main:      #c8cedc;
+      --border-strong:    #a8b0c8;
+      --success:          #1a9a5a;
+      --success-bg:       rgba(26,154,90,0.10);
+      --success-border:   rgba(26,154,90,0.30);
+      --warning:          #c08020;
+      --warning-bg:       rgba(192,128,32,0.10);
+      --warning-border:   rgba(192,128,32,0.30);
+      --danger:           #c02828;
+      --danger-bg:        rgba(192,40,40,0.10);
+      --danger-border:    rgba(192,40,40,0.30);
+      --col-a:            #1868d8;
+      --col-b:            #d85820;
+      --col-a-bg:         rgba(24,104,216,0.10);
+      --col-b-bg:         rgba(216,88,32,0.10);
+      --col-a-border:     rgba(24,104,216,0.30);
+      --col-b-border:     rgba(216,88,32,0.30);
+    }
+
+    /* ── Alto contraste ─────────────────────────────────── */
+    [data-theme="contrast"] {
+      --bg-body:          #000000;
+      --bg-panel:         #000000;
+      --bg-card:          #0c0c0c;
+      --bg-input:         #111111;
+      --bg-hover:         #1a1a1a;
+      --text-main:        #ffffff;
+      --text-muted:       #cccccc;
+      --text-label:       #dddddd;
+      --accent:           #ffff00;
+      --accent-strong:    #ffff44;
+      --accent-soft:      rgba(255,255,0,0.10);
+      --accent-border:    rgba(255,255,0,0.40);
+      --border-main:      #3a3a3a;
+      --border-strong:    #606060;
+      --success:          #00ff88;
+      --success-bg:       rgba(0,255,136,0.08);
+      --success-border:   rgba(0,255,136,0.35);
+      --warning:          #ffaa00;
+      --warning-bg:       rgba(255,170,0,0.08);
+      --warning-border:   rgba(255,170,0,0.35);
+      --danger:           #ff5555;
+      --danger-bg:        rgba(255,85,85,0.08);
+      --danger-border:    rgba(255,85,85,0.35);
+      --col-a:            #44aaff;
+      --col-b:            #ff8844;
+      --col-a-bg:         rgba(68,170,255,0.10);
+      --col-b-bg:         rgba(255,136,68,0.10);
+      --col-a-border:     rgba(68,170,255,0.40);
+      --col-b-border:     rgba(255,136,68,0.40);
+    }
+
+    /* ── Layout principal ──────────────────────────────── */
+    .app-container {
+      display: grid;
+      grid-template-columns: var(--panel-w) 1fr;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    .control-panel {
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border-main);
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .control-panel::-webkit-scrollbar { width: 6px; }
+    .control-panel::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+    .control-panel::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    .control-panel::-webkit-scrollbar-track { background: transparent; }
+
+    .simulation-panel {
+      position: relative;
+      background: var(--bg-body);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #canvas-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+    #canvas-container canvas {
+      border-radius: 10px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px var(--border-main);
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+    }
+
+    /* ── Header ────────────────────────────────────────── */
+    header {
+      padding: 18px 16px 12px;
+      border-bottom: 1px solid var(--border-main);
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .header-icon {
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    header h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      font-size: 0.80rem;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      letter-spacing: 0.03em;
+    }
+    .header-details {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      border-radius: 7px;
+      overflow: hidden;
+    }
+    .header-details summary {
+      padding: 7px 10px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent);
+      user-select: none;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-details summary::before { content: '▶'; font-size: 0.65em; transition: transform 0.2s; }
+    .header-details[open] summary::before { transform: rotate(90deg); }
+    .header-details-body {
+      padding: 6px 10px 10px;
+      border-top: 1px solid var(--accent-border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .header-details-body p {
+      font-size: 0.77rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .header-details-body strong { color: var(--text-label); }
+
+    /* ── Sections ──────────────────────────────────────── */
+    .section {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-main);
+    }
+    .section-label {
+      font-size: 0.70rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+    }
+    .mode-panel { flex: 1; }
+
+    /* ── Mode switch ───────────────────────────────────── */
+    .mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .mode-btn {
+      background: var(--bg-input);
+      border: 1.5px solid var(--border-main);
+      border-radius: 8px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 8px 6px 7px;
+      text-align: center;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .mode-btn:hover {
+      border-color: var(--accent-border);
+      color: var(--text-label);
+      background: var(--bg-hover);
+    }
+    .mode-btn.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .mode-sub {
+      font-size: 0.67rem;
+      font-weight: 400;
+      opacity: 0.75;
+    }
+
+    /* ── Label + value row ─────────────────────────────── */
+    .ctrl-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-label);
+      margin-bottom: 5px;
+    }
+    .ctrl-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 5px;
+    }
+    .ctrl-row .ctrl-label { margin-bottom: 0; }
+    .value-badge {
+      font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 0.77rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      padding: 1px 6px;
+      border-radius: 5px;
+    }
+
+    /* ── Sliders ───────────────────────────────────────── */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 3px;
+      background: linear-gradient(
+        to right,
+        var(--accent) 0%,
+        var(--accent) var(--fill, 20%),
+        var(--bg-input) var(--fill, 20%)
+      );
+      cursor: pointer;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg-panel);
+      box-shadow: 0 0 6px rgba(0,200,255,0.4);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.15); }
+    [data-theme="contrast"] input[type="range"]::-webkit-slider-thumb {
+      box-shadow: 0 0 0 2px #ffff00;
+    }
+    .slider-bounds {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* ── Select ────────────────────────────────────────── */
+    .custom-select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border-main);
+      border-radius: 7px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.82rem;
+      padding: 8px 10px;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23687890' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+    .custom-select:hover { border-color: var(--accent-border); }
+    .custom-select:focus { border-color: var(--accent); }
+    [data-theme="light"] .custom-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236070a0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    }
+    [data-theme="contrast"] .custom-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23cccccc' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    }
+    .custom-select option {
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+
+    /* ── Cards ─────────────────────────────────────────── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-main);
+      border-radius: 8px;
+      padding: 8px 10px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .card-accent {
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
+    }
+    .card-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+    .card-value {
+      font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+    }
+    .card-accent .card-value { color: var(--accent); }
+    .card-value.large { font-size: 1.35rem; }
+    .card-value small {
+      font-size: 0.68rem;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    /* ── Formula ───────────────────────────────────────── */
+    .formula-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-main);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .formula-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .formula-line {
+      font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 0.90rem;
+      color: var(--text-label);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 0;
+    }
+    .formula-line + .formula-line {
+      border-top: 1px solid var(--border-main);
+      margin-top: 4px;
+      padding-top: 6px;
+    }
+    .formula-sym { color: var(--accent); font-weight: 700; }
+    .formula-nums { color: var(--text-main); font-size: 0.82rem; flex-wrap: wrap; }
+
+    /* ── Float badge ───────────────────────────────────── */
+    .float-badge {
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 7px;
+      line-height: 1.4;
+    }
+    .float-badge.flota {
+      color: var(--success);
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+    }
+    .float-badge.hunde {
+      color: var(--danger);
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+    }
+    .float-badge.equilibrio {
+      color: var(--warning);
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+    }
+
+    /* ── Toggle ────────────────────────────────────────── */
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle-label input[type="checkbox"] { display: none; }
+    .toggle-text {
+      font-size: 0.80rem;
+      font-weight: 600;
+      color: var(--text-label);
+      flex: 1;
+    }
+    .toggle-pill-wrap {
+      width: 36px;
+      height: 20px;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border-strong);
+      border-radius: 10px;
+      position: relative;
+      transition: background 0.2s, border-color 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle-pill-inner {
+      position: absolute;
+      left: 2px;
+      top: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      transition: left 0.2s, background 0.2s;
+    }
+    .toggle-label input:checked + .toggle-text + .toggle-pill-wrap {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+    }
+    .toggle-label input:checked + .toggle-text + .toggle-pill-wrap .toggle-pill-inner {
+      left: 16px;
+      background: var(--accent);
+    }
+
+    /* ── Mini cards (compare) ──────────────────────────── */
+    .mini-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 5px;
+    }
+    .mini-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-main);
+      border-radius: 6px;
+      padding: 5px 7px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .mc-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .mc-val {
+      font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .mc-unit {
+      font-size: 0.62rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Obj headers (compare) ─────────────────────────── */
+    .obj-header {
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+    .obj-a-hdr { color: var(--col-a); }
+    .obj-b-hdr { color: var(--col-b); }
+    .obj-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-a { background: var(--col-a); }
+    .dot-b { background: var(--col-b); }
+
+    /* ── Compare result ────────────────────────────────── */
+    .compare-result {
+      font-size: 0.78rem;
+      font-weight: 600;
+      line-height: 1.5;
+      padding: 8px 10px;
+      border-radius: 7px;
+    }
+    .compare-result.same {
+      color: var(--warning);
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+    }
+    .compare-result.a-denser {
+      color: var(--col-a);
+      background: var(--col-a-bg);
+      border: 1px solid var(--col-a-border);
+    }
+    .compare-result.b-denser {
+      color: var(--col-b);
+      background: var(--col-b-bg);
+      border: 1px solid var(--col-b-border);
+    }
+
+    /* ── Quick rules ───────────────────────────────────── */
+    .quick-rules {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 8px;
+    }
+    .qr {
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    }
+    .qr-float { color: var(--success); background: var(--success-bg); border: 1px solid var(--success-border); }
+    .qr-eq    { color: var(--warning); background: var(--warning-bg); border: 1px solid var(--warning-border); }
+    .qr-sink  { color: var(--danger);  background: var(--danger-bg);  border: 1px solid var(--danger-border);  }
+
+    /* ── Custom details ────────────────────────────────── */
+    .custom-details {
+      background: var(--bg-card);
+      border: 1px solid var(--border-main);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .custom-details summary {
+      padding: 9px 12px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-label);
+      user-select: none;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+    }
+    .custom-details summary::after {
+      content: '▶';
+      position: absolute;
+      right: 12px;
+      font-size: 0.60em;
+      transition: transform 0.2s, color 0.2s;
+      color: var(--text-muted);
+    }
+    .custom-details[open] summary::after {
+      transform: rotate(90deg);
+      color: var(--accent);
+    }
+    .details-content {
+      padding: 8px 12px 10px;
+      border-top: 1px solid var(--border-main);
+    }
+    .concepts-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .concepts-list li {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      padding-left: 12px;
+      position: relative;
+    }
+    .concepts-list li::before {
+      content: '·';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .concepts-list strong { color: var(--text-label); }
+
+    /* ── Theme button ──────────────────────────────────── */
+    .theme-wrap {
+      position: absolute;
+      bottom: 18px;
+      right: 18px;
+      z-index: 20;
+    }
+    .theme-gear-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-strong);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.35s ease, color 0.2s, border-color 0.2s;
+    }
+    .theme-gear-btn:hover {
+      transform: rotate(35deg);
+      color: var(--accent);
+      border-color: var(--accent-border);
+    }
+    .theme-gear-btn.is-open {
+      transform: rotate(65deg);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    .theme-panel {
+      position: absolute;
+      bottom: 48px;
+      right: 0;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 10px;
+      min-width: 160px;
+      box-shadow: var(--shadow-pop, 0 12px 32px rgba(0,0,0,0.5));
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .theme-panel.is-open {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+    .theme-panel-title {
+      font-size: 0.70rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      padding: 0 2px;
+    }
+    .theme-opts { display: flex; flex-direction: column; gap: 4px; }
+    .theme-opt {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: transparent;
+      border: 1.5px solid transparent;
+      color: var(--text-label);
+      font-family: inherit;
+      font-size: 0.80rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .theme-opt:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+    }
+    .theme-opt.active {
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
+      color: var(--accent);
+    }
+    .theme-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dark-sw     { background: #141820; border: 1.5px solid #4a5060; }
+    .light-sw    { background: #f0f2f8; border: 1.5px solid #a0a8c0; }
+    .contrast-sw { background: #000000; border: 1.5px solid #ffff00; }
+
+    /* ── Divider ───────────────────────────────────────── */
+    hr.divider {
+      border: 0;
+      height: 1px;
+      background: var(--border-main);
+      margin: 0;
+    }
+
+    /* ── Shared slider row ─────────────────────────────── */
+    .shared-slider-hint {
+      font-size: 0.71rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* ── Bottom section ────────────────────────────────── */
+    .section-bottom {
+      margin-top: auto;
+    }
+
+    /* ── Responsive ────────────────────────────────────── */
+    @media (max-width: 1050px) {
+      .app-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        overflow: auto;
+        height: auto;
+        min-height: 100vh;
+      }
+      .control-panel { overflow: visible; }
+      .simulation-panel { min-height: 440px; }
+      body, html { overflow: auto; }
+    }
+    @media (max-width: 580px) {
+      :root { --panel-w: 100vw; }
+      .cards-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Persistence de tema antes de render -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('sim-density-theme');
+        if (t) document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+
+  <div class="app-container">
+
+    <!-- ═══ PANEL DE CONTROL ═══════════════════════════════ -->
+    <aside class="control-panel" id="control-panel">
+
+      <!-- Header -->
+      <header>
+        <div class="header-top">
+          <svg class="header-icon" width="42" height="42" viewBox="0 0 42 42" fill="none" aria-hidden="true">
+            <rect x="5" y="16" width="22" height="20" rx="2" stroke="currentColor" stroke-width="1.8"/>
+            <polygon points="5,16 15,8 37,8 27,16" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+            <polygon points="27,16 37,8 37,28 27,36" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+            <circle cx="11" cy="22" r="2.2" fill="currentColor" opacity="0.75"/>
+            <circle cx="17" cy="22" r="2.2" fill="currentColor" opacity="0.75"/>
+            <circle cx="23" cy="22" r="2.2" fill="currentColor" opacity="0.75"/>
+            <circle cx="11" cy="30" r="2.2" fill="currentColor" opacity="0.75"/>
+            <circle cx="17" cy="30" r="2.2" fill="currentColor" opacity="0.75"/>
+            <circle cx="23" cy="30" r="2.2" fill="currentColor" opacity="0.75"/>
+          </svg>
+          <h1>Densidad</h1>
+        </div>
+        <p class="subtitle">ρ = masa / volumen</p>
+        <details class="header-details">
+          <summary>¿Qué es la densidad?</summary>
+          <div class="header-details-body">
+            <p>La <strong>densidad</strong> nos dice cuánta materia hay comprimida en cada unidad de volumen. Dos objetos del mismo tamaño pueden tener masas muy distintas.</p>
+            <p>La <strong>masa</strong> es la cantidad de materia: cuántos átomos y cuán pesados son. La vista microscópica lo muestra directamente.</p>
+          </div>
+        </details>
+      </header>
+
+      <!-- Modo principal -->
+      <div class="section">
+        <div class="section-label">Modo de exploración</div>
+        <div class="mode-switch" role="tablist">
+          <button id="mode-single" class="mode-btn active" role="tab" aria-selected="true">
+            Un objeto
+            <span class="mode-sub">libre</span>
+          </button>
+          <button id="mode-compare" class="mode-btn" role="tab" aria-selected="false">
+            Comparar
+            <span class="mode-sub">dos objetos</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Panel: Un objeto ──────────────────────────── -->
+      <div id="panel-single" class="mode-panel">
+
+        <div class="section">
+          <label class="ctrl-label" for="sel-material">Material</label>
+          <select id="sel-material" class="custom-select"></select>
+        </div>
+
+        <!-- Volumen de la muestra (presets) -->
+        <div id="preset-vol-row" class="section">
+          <div class="ctrl-row">
+            <label class="ctrl-label" for="sl-preset-vol">Volumen de la muestra</label>
+            <span class="value-badge" id="val-preset-vol">200 cm³</span>
+          </div>
+          <input type="range" id="sl-preset-vol" min="10" max="1000" value="200">
+          <div class="slider-bounds"><span>10 cm³</span><span>1000 cm³</span></div>
+        </div>
+
+        <!-- Sliders personalizados -->
+        <div id="custom-rows" class="section" style="display:none">
+          <div class="ctrl-row">
+            <label class="ctrl-label" for="sl-mass">Masa</label>
+            <span class="value-badge" id="val-mass">200 g</span>
+          </div>
+          <input type="range" id="sl-mass" min="1" max="2000" value="200">
+          <div class="slider-bounds"><span>1 g</span><span>2000 g</span></div>
+          <div style="margin-top:11px">
+            <div class="ctrl-row">
+              <label class="ctrl-label" for="sl-vol">Volumen</label>
+              <span class="value-badge" id="val-vol">200 cm³</span>
+            </div>
+            <input type="range" id="sl-vol" min="1" max="2000" value="200">
+            <div class="slider-bounds"><span>1 cm³</span><span>2000 cm³</span></div>
+          </div>
+        </div>
+
+        <!-- Datos -->
+        <div class="section">
+          <div class="cards-grid">
+            <div class="card">
+              <div class="card-label">Masa</div>
+              <div class="card-value"><span id="read-mass">200</span><small>g</small></div>
+            </div>
+            <div class="card">
+              <div class="card-label">Volumen</div>
+              <div class="card-value"><span id="read-vol">200</span><small>cm³</small></div>
+            </div>
+          </div>
+          <div class="card card-accent" style="margin-top:7px">
+            <div class="card-label">Densidad</div>
+            <div class="card-value large"><span id="read-rho">1,00</span><small>g/cm³</small></div>
+          </div>
+        </div>
+
+        <!-- Fórmula -->
+        <div class="section">
+          <div class="formula-box">
+            <div class="formula-title">Cálculo</div>
+            <div class="formula-line">
+              <span class="formula-sym">ρ</span>
+              <span>&nbsp;=&nbsp;</span>
+              <span><em>m</em> / <em>V</em></span>
+            </div>
+            <div class="formula-line formula-nums" id="formula-nums">
+              — g / — cm³ = — g/cm³
+            </div>
+          </div>
+        </div>
+
+        <!-- Flotabilidad en agua -->
+        <div class="section">
+          <div id="float-badge" class="float-badge flota">
+            ρ &lt; 1 g/cm³ → flota en agua ↑
+          </div>
+        </div>
+
+        <!-- Toggle microscópico -->
+        <div class="section">
+          <label class="toggle-label">
+            <input type="checkbox" id="toggle-micro" checked>
+            <span class="toggle-text">Vista microscópica activa</span>
+            <span class="toggle-pill-wrap"><span class="toggle-pill-inner"></span></span>
+          </label>
+        </div>
+
+      </div><!-- /panel-single -->
+
+      <!-- ── Panel: Comparar ───────────────────────────── -->
+      <div id="panel-compare" class="mode-panel" style="display:none">
+
+        <div class="section">
+          <div class="section-label">¿Qué se mantiene fijo?</div>
+          <div class="mode-switch" role="tablist">
+            <button id="sub-samevol" class="mode-btn active" role="tab" aria-selected="true">
+              Mismo volumen
+              <span class="mode-sub">masa diferente</span>
+            </button>
+            <button id="sub-samemass" class="mode-btn" role="tab" aria-selected="false">
+              Misma masa
+              <span class="mode-sub">volumen diferente</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="ctrl-row">
+            <label class="ctrl-label" id="shared-label" for="sl-shared">Volumen compartido</label>
+            <span class="value-badge" id="shared-val">200 cm³</span>
+          </div>
+          <input type="range" id="sl-shared" min="10" max="1000" value="200">
+          <div class="slider-bounds">
+            <span id="shared-min">10 cm³</span>
+            <span id="shared-max">1000 cm³</span>
+          </div>
+          <p class="shared-slider-hint" id="shared-hint">Los dos objetos tienen el mismo volumen.</p>
+        </div>
+
+        <!-- Objeto A -->
+        <div class="section">
+          <div class="obj-header obj-a-hdr">
+            <span class="obj-dot dot-a"></span>Objeto A
+          </div>
+          <label class="ctrl-label" for="sel-mat-a">Material</label>
+          <select id="sel-mat-a" class="custom-select"></select>
+          <div class="mini-cards" style="margin-top:8px">
+            <div class="mini-card">
+              <span class="mc-label">ρ</span>
+              <span class="mc-val" id="rho-a">—</span>
+              <span class="mc-unit">g/cm³</span>
+            </div>
+            <div class="mini-card">
+              <span class="mc-label">m</span>
+              <span class="mc-val" id="mass-a">—</span>
+              <span class="mc-unit">g</span>
+            </div>
+            <div class="mini-card">
+              <span class="mc-label">V</span>
+              <span class="mc-val" id="vol-a">—</span>
+              <span class="mc-unit">cm³</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Objeto B -->
+        <div class="section">
+          <div class="obj-header obj-b-hdr">
+            <span class="obj-dot dot-b"></span>Objeto B
+          </div>
+          <label class="ctrl-label" for="sel-mat-b">Material</label>
+          <select id="sel-mat-b" class="custom-select"></select>
+          <div class="mini-cards" style="margin-top:8px">
+            <div class="mini-card">
+              <span class="mc-label">ρ</span>
+              <span class="mc-val" id="rho-b">—</span>
+              <span class="mc-unit">g/cm³</span>
+            </div>
+            <div class="mini-card">
+              <span class="mc-label">m</span>
+              <span class="mc-val" id="mass-b">—</span>
+              <span class="mc-unit">g</span>
+            </div>
+            <div class="mini-card">
+              <span class="mc-label">V</span>
+              <span class="mc-val" id="vol-b">—</span>
+              <span class="mc-unit">cm³</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="compare-result same" id="compare-result">
+            Selecciona dos materiales para comparar.
+          </div>
+        </div>
+
+      </div><!-- /panel-compare -->
+
+      <!-- Conceptos clave -->
+      <div class="section section-bottom">
+        <details class="custom-details">
+          <summary>Conceptos clave</summary>
+          <div class="details-content">
+            <ul class="concepts-list">
+              <li><strong>Masa:</strong> cantidad de materia (átomos). No depende de la gravedad.</li>
+              <li><strong>Densidad:</strong> propiedad intensiva — no cambia al cortar el objeto.</li>
+              <li><strong>Micro-macro:</strong> más partículas/volumen = más masa = más densidad.</li>
+              <li><strong>Unidades:</strong> 1 g/cm³ = 1 g/mL = 1000 kg/m³</li>
+            </ul>
+            <div class="quick-rules">
+              <span class="qr qr-float">ρ &lt; 1 g/cm³ → flota en agua ↑</span>
+              <span class="qr qr-eq">ρ = 1 g/cm³ → equilibrio en agua ⇌</span>
+              <span class="qr qr-sink">ρ &gt; 1 g/cm³ → se hunde en agua ↓</span>
+            </div>
+          </div>
+        </details>
+      </div>
+
+    </aside><!-- /control-panel -->
+
+    <!-- ═══ PANEL DE SIMULACIÓN ════════════════════════════ -->
+    <main class="simulation-panel" id="simulation-panel">
+      <div id="canvas-container"></div>
+
+      <!-- Botón de tema -->
+      <div class="theme-wrap">
+        <button class="theme-gear-btn" id="theme-btn" aria-label="Cambiar tema" title="Cambiar tema">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+        <div class="theme-panel" id="theme-panel" aria-hidden="true">
+          <p class="theme-panel-title">Tema visual</p>
+          <div class="theme-opts">
+            <button class="theme-opt active" data-theme="dark">
+              <span class="theme-swatch dark-sw"></span>Oscuro
+            </button>
+            <button class="theme-opt" data-theme="light">
+              <span class="theme-swatch light-sw"></span>Claro
+            </button>
+            <button class="theme-opt" data-theme="contrast">
+              <span class="theme-swatch contrast-sw"></span>Alto contraste
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div><!-- /app-container -->
+
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+  <script src="js/sketch.js"></script>
+</body>
+</html>
