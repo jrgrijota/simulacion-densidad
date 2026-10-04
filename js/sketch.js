@@ -17,8 +17,12 @@ const MATS = [
   { id:'custom', name:'Personalizado', rho:null,  col:[155,145,210], cat:'custom' },
 ];
 
-const MAX_RHO = 14.0;
-const REF_VOL = 200;   // cm³ de referencia para escalar cajas
+const MAX_RHO  = 14.0;
+const REF_VOL  = 200;    // cm³ de referencia para escalar cajas
+const ATOM_R   = 2.5;    // radio fijo de partícula en caja macro (px) — NUNCA varía
+const BOX_FILL = 0.058;  // fracción de relleno por unidad de densidad (calibrado: agua≈120 part.)
+const MIC_AF   = 0.055;  // radio partícula micro = lupa_radius × MIC_AF
+const MIC_FILL = 0.18;   // fracción de relleno micro por unidad de densidad
 
 // ── Estado global ─────────────────────────────────────────────
 let simMode   = 'single';
@@ -34,8 +38,7 @@ let matAIdx   = 1;
 let matBIdx   = 6;
 let sharedVal = 200;
 
-// ── Partículas ─────────────────────────────────────────────
-let ptsSingle = [], ptsA = [], ptsB = [];
+// ── Partículas (solo lupa microscópica) ─────────────────────
 let microSingle = [], microA = [], microB = [];
 let needRebuild = true;
 
@@ -138,105 +141,118 @@ function computeObj(mat) {
 //  Tamaño de caja proporcional al volumen
 // ============================================================
 function boxSize(vol) {
-  let sc = constrain(pow(vol / REF_VOL, 1/3), 0.35, 1.55);
+  // Escala logarítmica: el cambio visual es perceptible en todo el rango 1-2000 cm³
+  // (la raíz cúbica se aplana demasiado pronto y deja zonas muertas en el slider)
+  let sc = constrain(
+    map(log(max(vol, 1)), 0, log(2000), 0.25, 1.55),
+    0.25, 1.55
+  );
   return { bw: 190 * sc, bh: 215 * sc };
 }
 
-// ============================================================
-//  Partículas
-// ============================================================
-function nPts(rho) {
-  if (!rho || rho <= 0) return 2;
-  return max(2, min(180, round(pow(rho / MAX_RHO, 0.55) * 180)));
+// Tamaños relativos para modo comparar misma masa: mantiene proporción real entre objetos
+function boxSizePair(volA, volB) {
+  let maxVol = max(volA, volB);
+  let baseW = 175, baseH = 200;
+  let absScale = constrain(pow(maxVol / REF_VOL, 1/3), 0.60, 1.10);
+  let scA = constrain(pow(volA / maxVol, 1/3), 0.15, 1.0) * absScale;
+  let scB = constrain(pow(volB / maxVol, 1/3), 0.15, 1.0) * absScale;
+  return {
+    sA: { bw: baseW * scA, bh: baseH * scA },
+    sB: { bw: baseW * scB, bh: baseH * scB }
+  };
 }
 
-function buildGrid(cx, cy, bw, bh, n, col) {
+// ============================================================
+//  Partículas (solo para lupa microscópica)
+// ============================================================
+
+// N ∝ ρ: a mayor densidad → más partículas por área de lupa.
+// Radio fijo proporcional al tamaño de la lupa.
+function buildMicro(radius, rho, col, cat) {
   let pts = [];
-  let pad = 8;
-  let aw = bw - pad*2, ah = bh - pad*2;
-  let cols = max(1, round(sqrt(n * (aw / ah))));
+  let pr  = constrain(radius * MIC_AF, 3, 12);
+  // Grid algo más grande que el círculo: el clip de la lupa recorta lo que sobresale
+  let gr   = radius * 1.10;
+  let n    = constrain(round(MIC_FILL / (MIC_AF * MIC_AF) * rho), 2, 200);
+  let cols = max(1, round(sqrt(n)));
   let rows = max(1, ceil(n / cols));
-  let xs = aw / cols, ys = ah / rows;
-  let pr = constrain(min(xs, ys) * 0.36, 2.5, 6.5);
+  let xs = (gr*2)/cols, ys = (gr*2)/rows;
   for (let i = 0; i < n; i++) {
     let c = i % cols, r = floor(i / cols);
-    let bxp = cx - bw/2 + pad + xs*c + xs/2;
-    let byp = cy - bh/2 + pad + ys*r + ys/2;
+    let px = -gr + xs*c + xs/2 + random(-xs*0.10, xs*0.10);
+    let py = -gr + ys*r + ys/2 + random(-ys*0.10, ys*0.10);
+    // Sin filtro radial: el clip circular de la lupa oculta lo que sobresale
+    let angle = random(TWO_PI);
+    let speed = (cat === 'liquid') ? random(2.8, 5.5) : 0;
     pts.push({
-      x: bxp + random(-pr*0.3, pr*0.3),
-      y: byp + random(-pr*0.3, pr*0.3),
-      bx: bxp, by: byp,
-      vx: random(-0.3, 0.3), vy: random(-0.3, 0.3),
-      r: pr, col
+      x: px, y: py, ox: px, oy: py,
+      r: pr, col,
+      vx: cos(angle) * speed,
+      vy: sin(angle) * speed,
+      phase: random(TWO_PI)
     });
   }
   return pts;
 }
 
-function buildMicro(radius, rho, col) {
-  let pts = [];
-  let n = max(3, min(35, round(pow(rho / MAX_RHO, 0.55) * 35)));
-  let gr = radius * 0.86;
-  let cols = max(1, round(sqrt(n)));
-  let rows = max(1, ceil(n / cols));
-  let xs = (gr*2)/cols, ys = (gr*2)/rows;
-  let pr = constrain(min(xs, ys)*0.40, 4, 14);
-  for (let i = 0; i < n; i++) {
-    let c = i % cols, r = floor(i / cols);
-    let px = -gr + xs*c + xs/2 + random(-xs*0.14, xs*0.14);
-    let py = -gr + ys*r + ys/2 + random(-ys*0.14, ys*0.14);
-    if (sqrt(px*px + py*py) < radius - pr) {
-      pts.push({ x: px, y: py, r: pr, col });
+// Anima partículas: líquidos con movimiento browniano, sólidos con vibración térmica
+function animateMicro(pts, radius, cat) {
+  if (cat === 'liquid') {
+    let lim = radius * 1.28;
+    let minSpd = 1.8, maxSpd = 5.5;
+    for (let p of pts) {
+      // Perturbación browniana: dirección cambia aleatoriamente cada frame
+      p.vx += random(-0.55, 0.55);
+      p.vy += random(-0.55, 0.55);
+      // Mantener velocidad dentro del rango térmico
+      let spd = sqrt(p.vx * p.vx + p.vy * p.vy);
+      if (spd > maxSpd) { p.vx = p.vx/spd * maxSpd; p.vy = p.vy/spd * maxSpd; }
+      if (spd < minSpd) { p.vx = p.vx/spd * minSpd; p.vy = p.vy/spd * minSpd; }
+
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Rebote fuera del área visible — el clip de la lupa lo oculta
+      let d = sqrt(p.x * p.x + p.y * p.y);
+      if (d > lim) {
+        let nx = p.x / d, ny = p.y / d;
+        let dot = p.vx * nx + p.vy * ny;
+        p.vx -= 2 * dot * nx;
+        p.vy -= 2 * dot * ny;
+        // Desvío aleatorio en el rebote para romper la simetría radial
+        p.vx += random(-1.0, 1.0);
+        p.vy += random(-1.0, 1.0);
+        p.x = nx * (lim - 1);
+        p.y = ny * (lim - 1);
+      }
+    }
+  } else {
+    // Sólidos: vibración oscilatoria + jitter térmico pequeño
+    let t = frameCount * 0.18;
+    for (let p of pts) {
+      let amp = p.r * 0.55;
+      p.x = p.ox + sin(t * 3.1 + p.phase) * amp + random(-0.4, 0.4);
+      p.y = p.oy + cos(t * 2.7 + p.phase * 1.3) * amp + random(-0.4, 0.4);
     }
   }
-  return pts;
 }
 
 function buildAll() {
-  let s  = getSingle();
-  let a  = getObjA();
-  let b  = getObjB();
-  let sA = cmpSub === 'samevol' ? boxSize(sharedVal) : boxSize(a.vol);
-  let sB = cmpSub === 'samevol' ? boxSize(sharedVal) : boxSize(b.vol);
-
-  let scx = width*0.275, scy = height*0.465;
-  let acx = width*0.255, acy = height*0.480;
-  let bcx = width*0.745, bcy = height*0.480;
-  let { bw: sw, bh: sh } = boxSize(s.vol);
-
-  randomSeed(singleMatIdx*1000 + round(s.vol));
-  ptsSingle = buildGrid(scx, scy, sw, sh, nPts(s.rho), s.mat.col);
-
-  randomSeed(matAIdx*1000 + round(a.vol));
-  ptsA = buildGrid(acx, acy, sA.bw, sA.bh, nPts(a.rho), a.mat.col);
-
-  randomSeed(matBIdx*2000 + round(b.vol));
-  ptsB = buildGrid(bcx, bcy, sB.bw, sB.bh, nPts(b.rho), b.mat.col);
+  let s = getSingle();
+  let a = getObjA();
+  let b = getObjB();
 
   randomSeed(singleMatIdx*777);
-  microSingle = buildMicro(90, s.rho, s.mat.col);
+  microSingle = buildMicro(90, s.rho, s.mat.col, s.mat.cat);
 
   randomSeed(matAIdx*333);
-  microA = buildMicro(50, a.rho, a.mat.col);
+  microA = buildMicro(50, a.rho, a.mat.col, a.mat.cat);
 
   randomSeed(matBIdx*555);
-  microB = buildMicro(50, b.rho, b.mat.col);
+  microB = buildMicro(50, b.rho, b.mat.col, b.mat.cat);
 
   randomSeed();
-}
-
-function movePts(pts, cx, cy, bw, bh) {
-  let pad = 6;
-  for (let p of pts) {
-    p.vx += random(-0.06, 0.06);
-    p.vy += random(-0.06, 0.06);
-    p.vx += (p.bx - p.x) * 0.018;
-    p.vy += (p.by - p.y) * 0.018;
-    p.vx = constrain(p.vx, -0.55, 0.55);
-    p.vy = constrain(p.vy, -0.55, 0.55);
-    p.x  = constrain(p.x + p.vx, cx - bw/2 + pad, cx + bw/2 - pad);
-    p.y  = constrain(p.y + p.vy, cy - bh/2 + pad, cy + bh/2 - pad);
-  }
 }
 
 // ============================================================
@@ -251,61 +267,249 @@ function drawGrid() {
 }
 
 // ============================================================
-//  Dibujo: caja 3D isométrica
+//  Dibujo: contenedor 2D (vista de corte transversal)
 // ============================================================
-function drawBox3D(cx, cy, bw, bh, col, alpha) {
-  alpha = alpha !== undefined ? alpha : 220;
-  let dx = bw * 0.22, dy = -bh * 0.10;
+function drawBox2D(cx, cy, bw, bh, mat, alpha) {
+  let col = mat.col;
+  alpha = alpha !== undefined ? alpha : 255;
+  let x = cx - bw/2, y = cy - bh/2;
+  let r = 4;
 
-  // Cara lateral derecha (más oscura)
-  let rc = [col[0]*0.50, col[1]*0.50, col[2]*0.52];
-  fill(rc[0], rc[1], rc[2], alpha);
+  // Sombra
   noStroke();
-  beginShape();
-  vertex(cx+bw/2,    cy-bh/2);
-  vertex(cx+bw/2+dx, cy-bh/2+dy);
-  vertex(cx+bw/2+dx, cy+bh/2+dy);
-  vertex(cx+bw/2,    cy+bh/2);
-  endShape(CLOSE);
+  fill(0, 0, 0, 38);
+  rect(x + 5, y + 8, bw, bh, r);
 
-  // Cara superior (más clara)
-  let tc = [min(255,col[0]*1.4), min(255,col[1]*1.4), min(255,col[2]*1.4)];
-  fill(tc[0], tc[1], tc[2], alpha);
-  beginShape();
-  vertex(cx-bw/2,    cy-bh/2);
-  vertex(cx-bw/2+dx, cy-bh/2+dy);
-  vertex(cx+bw/2+dx, cy-bh/2+dy);
-  vertex(cx+bw/2,    cy-bh/2);
-  endShape(CLOSE);
-
-  // Cara frontal
+  // Bloque base
   fill(...col, alpha);
-  noStroke();
-  rect(cx-bw/2, cy-bh/2, bw, bh, 3);
+  rect(x, y, bw, bh, r);
 
-  // Borde frontal
-  stroke(...TH.border);
-  strokeWeight(1.3);
+  drawingContext.save();
+  drawingContext.beginPath();
+  drawingContext.rect(x, y, bw, bh);
+  drawingContext.clip();
+
+  // Textura del material
+  drawMaterialTexture(mat, x, y, bw, bh);
+
+  // Gradiente de iluminación encima de la textura
+  let topG = drawingContext.createLinearGradient(x, y, x, y + bh);
+  topG.addColorStop(0,    'rgba(255,255,255,0.22)');
+  topG.addColorStop(0.22, 'rgba(255,255,255,0.06)');
+  topG.addColorStop(1,    'rgba(0,0,0,0.22)');
+  drawingContext.fillStyle = topG;
+  drawingContext.fillRect(x, y, bw, bh);
+
+  let leftG = drawingContext.createLinearGradient(x, y, x + 18, y);
+  leftG.addColorStop(0, 'rgba(255,255,255,0.20)');
+  leftG.addColorStop(1, 'rgba(255,255,255,0.00)');
+  drawingContext.fillStyle = leftG;
+  drawingContext.fillRect(x, y, bw, bh);
+
+  drawingContext.restore();
+
+  // Borde
   noFill();
-  rect(cx-bw/2, cy-bh/2, bw, bh, 3);
+  stroke(max(0, col[0]-50), max(0, col[1]-50), max(0, col[2]-50), 210);
+  strokeWeight(1.5);
+  rect(x, y, bw, bh, r);
+
+  stroke(255, 255, 255, 32);
+  strokeWeight(1);
+  rect(x + 1.5, y + 1.5, bw - 3, bh - 3, r);
+
   noStroke();
 }
 
-// ============================================================
-//  Dibujo: partículas dentro de caja (con clip)
-// ============================================================
-function drawPtsInBox(pts, cx, cy, bw, bh) {
-  drawingContext.save();
-  drawingContext.beginPath();
-  drawingContext.rect(cx-bw/2+2, cy-bh/2+2, bw-4, bh-4);
-  drawingContext.clip();
+function drawMaterialTexture(mat, x, y, bw, bh) {
+  let rng = seededRand(mat.id.split('').reduce((a, c, i) => a + c.charCodeAt(0) * (i + 7), 0));
+  let R  = rng;
+  let Rn = (a, b) => a + R() * (b - a);
+  let c  = mat.col;
 
-  noStroke();
-  for (let p of pts) {
-    fill(...p.col, 228);
-    ellipse(p.x, p.y, p.r*2, p.r*2);
-    fill(255, 255, 255, 52);
-    ellipse(p.x - p.r*0.30, p.y - p.r*0.30, p.r*0.52, p.r*0.52);
+  drawingContext.save();
+  drawingContext.setLineDash([]);
+
+  if (mat.id === 'madera') {
+    // Veta de madera: líneas bezier horizontales irregulares
+    for (let i = 0; i < 14; i++) {
+      let gy = y + Rn(2, bh - 2);
+      let dark = R() > 0.45;
+      let a  = Rn(0.13, 0.35);
+      drawingContext.strokeStyle = dark
+        ? `rgba(${Math.max(0,c[0]-55)},${Math.max(0,c[1]-45)},${Math.max(0,c[2]-30)},${a})`
+        : `rgba(${Math.min(255,c[0]+40)},${Math.min(255,c[1]+32)},${Math.min(255,c[2]+12)},${a})`;
+      drawingContext.lineWidth = Rn(0.8, 2.8);
+      drawingContext.beginPath();
+      drawingContext.moveTo(x, gy + Rn(-3, 3));
+      let mx = x + bw * 0.5;
+      drawingContext.quadraticCurveTo(mx, gy + Rn(-9, 9), x + bw, gy + Rn(-5, 5));
+      drawingContext.stroke();
+    }
+
+  } else if (mat.id === 'corcho') {
+    // Células de corcho: óvalos irregulares superpuestos
+    for (let i = 0; i < 70; i++) {
+      let cx2 = x + Rn(0, bw), cy2 = y + Rn(0, bh);
+      let rx2 = Rn(2, 6), ry2 = Rn(1.5, 4.5);
+      let rot  = Rn(-0.8, 0.8);
+      let a    = Rn(0.15, 0.42);
+      let dark = R() > 0.5;
+      drawingContext.strokeStyle = dark
+        ? `rgba(${Math.max(0,c[0]-65)},${Math.max(0,c[1]-55)},${Math.max(0,c[2]-40)},${a})`
+        : `rgba(${Math.min(255,c[0]+30)},${Math.min(255,c[1]+22)},${Math.min(255,c[2]+10)},${a * 0.6})`;
+      drawingContext.lineWidth = Rn(0.5, 1.2);
+      drawingContext.beginPath();
+      drawingContext.ellipse(cx2, cy2, rx2, ry2, rot, 0, Math.PI * 2);
+      drawingContext.stroke();
+    }
+
+  } else if (mat.id === 'hielo') {
+    // Cristales de hielo: fracturas ramificadas
+    for (let i = 0; i < 10; i++) {
+      let sx = x + Rn(bw*0.1, bw*0.9);
+      let sy = y + Rn(bh*0.1, bh*0.9);
+      let ang = Rn(0, Math.PI);
+      let len = Rn(18, bw * 0.38);
+      let a   = Rn(0.10, 0.28);
+      drawingContext.strokeStyle = `rgba(255,255,255,${a})`;
+      drawingContext.lineWidth   = Rn(0.5, 1.5);
+      drawingContext.beginPath();
+      drawingContext.moveTo(sx, sy);
+      let ex = sx + Math.cos(ang) * len, ey = sy + Math.sin(ang) * len;
+      drawingContext.lineTo(ex, ey);
+      drawingContext.stroke();
+      // 2-3 ramas
+      let branches = R() > 0.4 ? 2 : 1;
+      for (let b = 0; b < branches; b++) {
+        let t    = Rn(0.3, 0.7);
+        let bx2  = sx + Math.cos(ang) * len * t;
+        let by2  = sy + Math.sin(ang) * len * t;
+        let bang = ang + (R() > 0.5 ? 1 : -1) * Rn(0.5, 1.2);
+        let blen = len * Rn(0.25, 0.55);
+        drawingContext.strokeStyle = `rgba(255,255,255,${a * 0.7})`;
+        drawingContext.lineWidth   = Rn(0.4, 1.0);
+        drawingContext.beginPath();
+        drawingContext.moveTo(bx2, by2);
+        drawingContext.lineTo(bx2 + Math.cos(bang)*blen, by2 + Math.sin(bang)*blen);
+        drawingContext.stroke();
+      }
+    }
+    // Brillo general de hielo
+    let iceG = drawingContext.createRadialGradient(x + bw*0.3, y + bh*0.25, 0, x + bw*0.5, y + bh*0.5, bw*0.7);
+    iceG.addColorStop(0, 'rgba(255,255,255,0.14)');
+    iceG.addColorStop(1, 'rgba(255,255,255,0.00)');
+    drawingContext.fillStyle = iceG;
+    drawingContext.fillRect(x, y, bw, bh);
+
+  } else if (mat.id === 'agua') {
+    // Ondas de agua semitransparentes
+    for (let i = 0; i < 9; i++) {
+      let wy = y + (i + 1) * (bh / 10);
+      let a  = Rn(0.06, 0.16);
+      drawingContext.strokeStyle = `rgba(255,255,255,${a})`;
+      drawingContext.lineWidth   = Rn(0.8, 2.2);
+      drawingContext.beginPath();
+      drawingContext.moveTo(x, wy);
+      let freq = Rn(0.08, 0.18);
+      let amp  = Rn(1.5, 4.5);
+      let phase2 = Rn(0, Math.PI * 2);
+      for (let wx = x; wx <= x + bw; wx += 5) {
+        drawingContext.lineTo(wx, wy + Math.sin((wx - x) * freq + phase2) * amp);
+      }
+      drawingContext.stroke();
+    }
+    // Transparencia: destello interior
+    let wG = drawingContext.createLinearGradient(x, y, x + bw * 0.6, y + bh * 0.5);
+    wG.addColorStop(0, 'rgba(255,255,255,0.12)');
+    wG.addColorStop(1, 'rgba(255,255,255,0.00)');
+    drawingContext.fillStyle = wG;
+    drawingContext.fillRect(x, y, bw, bh);
+
+  } else if (mat.id === 'alum') {
+    // Aluminio: rayas verticales del cepillado
+    for (let i = 0; i < 40; i++) {
+      let lx = x + Rn(0, bw);
+      let a  = Rn(0.06, 0.24);
+      let bright = R() > 0.5;
+      drawingContext.strokeStyle = bright
+        ? `rgba(255,255,255,${a})`
+        : `rgba(0,0,0,${a * 0.6})`;
+      drawingContext.lineWidth = Rn(0.4, 2.2);
+      drawingContext.beginPath();
+      drawingContext.moveTo(lx, y);
+      drawingContext.lineTo(lx + Rn(-4, 4), y + bh);
+      drawingContext.stroke();
+    }
+
+  } else if (mat.id === 'hierro') {
+    // Hierro: grano metálico rugoso
+    for (let i = 0; i < 30; i++) {
+      let gx = x + Rn(0, bw), gy = y + Rn(0, bh);
+      let gw = Rn(3, 14), gh = Rn(2, 8);
+      let a  = Rn(0.08, 0.28);
+      let bright = R() > 0.55;
+      drawingContext.fillStyle = bright
+        ? `rgba(255,255,255,${a})`
+        : `rgba(0,0,0,${a})`;
+      drawingContext.fillRect(gx, gy, gw, gh);
+    }
+
+  } else if (mat.id === 'cobre') {
+    // Cobre: bandas de reflejo diagonal cálido
+    for (let i = 0; i < 7; i++) {
+      let sx = x + Rn(0, bw);
+      let a  = Rn(0.09, 0.22);
+      drawingContext.strokeStyle = `rgba(255,210,160,${a})`;
+      drawingContext.lineWidth   = Rn(4, bw * 0.12);
+      drawingContext.beginPath();
+      drawingContext.moveTo(sx, y);
+      drawingContext.lineTo(sx - bh * Rn(0.3, 0.7), y + bh);
+      drawingContext.stroke();
+    }
+
+  } else if (mat.id === 'plomo') {
+    // Plomo: manchas oscuras y grises, aspecto mate
+    for (let i = 0; i < 35; i++) {
+      let gx = x + Rn(0, bw), gy = y + Rn(0, bh);
+      let gr2 = Rn(4, 16);
+      let a   = Rn(0.10, 0.32);
+      let bright = R() > 0.65;
+      drawingContext.fillStyle = bright
+        ? `rgba(200,210,220,${a})`
+        : `rgba(0,0,0,${a})`;
+      drawingContext.beginPath();
+      drawingContext.ellipse(gx, gy, gr2, gr2 * Rn(0.4, 0.9), Rn(0, Math.PI), 0, Math.PI * 2);
+      drawingContext.fill();
+    }
+
+  } else if (mat.id === 'plast') {
+    // Plástico PET: franjas de brillo diagonal plástico
+    let pw1 = bw * 0.14;
+    drawingContext.strokeStyle = 'rgba(255,255,255,0.20)';
+    drawingContext.lineWidth   = pw1;
+    drawingContext.beginPath();
+    drawingContext.moveTo(x + bw * 0.18, y);
+    drawingContext.lineTo(x, y + bh * 0.45);
+    drawingContext.stroke();
+    drawingContext.strokeStyle = 'rgba(255,255,255,0.09)';
+    drawingContext.lineWidth   = pw1 * 0.6;
+    drawingContext.beginPath();
+    drawingContext.moveTo(x + bw * 0.52, y);
+    drawingContext.lineTo(x + bw * 0.22, y + bh * 0.72);
+    drawingContext.stroke();
+
+  } else {
+    // Custom: líneas diagonales suaves
+    for (let i = 0; i < 8; i++) {
+      let lx = x + Rn(0, bw);
+      drawingContext.strokeStyle = `rgba(255,255,255,${Rn(0.04, 0.12)})`;
+      drawingContext.lineWidth   = Rn(1, 4);
+      drawingContext.beginPath();
+      drawingContext.moveTo(lx, y);
+      drawingContext.lineTo(lx - bh * 0.4, y + bh);
+      drawingContext.stroke();
+    }
   }
 
   drawingContext.restore();
@@ -315,43 +519,73 @@ function drawPtsInBox(pts, cx, cy, bw, bh) {
 //  Dibujo: vista microscópica (lupa)
 // ============================================================
 function drawMicroLens(cx, cy, radius, microPts, caption) {
-  // Fondo
-  fill(...TH.panel, 245);
-  stroke(...TH.accent, 190);
-  strokeWeight(2);
-  ellipse(cx, cy, radius*2, radius*2);
+  let r = radius;
 
-  // Clip + partículas
+  // Marco exterior del objetivo (anillo metálico)
+  noFill();
+  stroke(...TH.border, 200);
+  strokeWeight(r * 0.13 + 2);
+  ellipse(cx, cy, r*2 + r*0.16, r*2 + r*0.16);
+
   drawingContext.save();
   drawingContext.beginPath();
-  drawingContext.arc(cx, cy, radius-2, 0, Math.PI*2);
+  drawingContext.arc(cx, cy, r, 0, Math.PI * 2);
   drawingContext.clip();
 
+  // Fondo del campo visual (degradado radial, centro más claro)
+  let bR = TH.bg[0], bG = TH.bg[1], bB = TH.bg[2];
+  let bgGrad = drawingContext.createRadialGradient(cx - r*0.18, cy - r*0.18, 0, cx, cy, r);
+  bgGrad.addColorStop(0, `rgba(${min(255,bR+12)},${min(255,bG+12)},${min(255,bB+14)},1)`);
+  bgGrad.addColorStop(1, `rgba(${max(0,bR-8)},${max(0,bG-8)},${max(0,bB-8)},1)`);
+  drawingContext.fillStyle = bgGrad;
+  drawingContext.fillRect(cx - r, cy - r, r*2, r*2);
+
+  // Partículas con aspecto esférico
   noStroke();
   for (let p of microPts) {
-    fill(...p.col, 232);
-    ellipse(cx+p.x, cy+p.y, p.r*2, p.r*2);
-    fill(255, 255, 255, 58);
-    ellipse(cx+p.x - p.r*0.28, cy+p.y - p.r*0.28, p.r*0.5, p.r*0.5);
+    let pr = p.r, px = cx+p.x, py = cy+p.y;
+    fill(...p.col, 238);
+    ellipse(px, py, pr*2, pr*2);
+    fill(max(0,p.col[0]-55), max(0,p.col[1]-55), max(0,p.col[2]-55), 60);
+    ellipse(px + pr*0.26, py + pr*0.28, pr*1.25, pr*1.25);
+    fill(255, 255, 255, 72);
+    ellipse(px - pr*0.30, py - pr*0.32, pr*0.72, pr*0.72);
+    fill(255, 255, 255, 130);
+    ellipse(px - pr*0.38, py - pr*0.38, pr*0.28, pr*0.28);
   }
+
+  // Viñeta (borde oscuro interior → sensación de profundidad óptica)
+  let vigGrad = drawingContext.createRadialGradient(cx, cy, r * 0.60, cx, cy, r);
+  vigGrad.addColorStop(0, 'rgba(0,0,0,0.00)');
+  vigGrad.addColorStop(1, 'rgba(0,0,0,0.32)');
+  drawingContext.fillStyle = vigGrad;
+  drawingContext.fillRect(cx - r, cy - r, r*2, r*2);
 
   drawingContext.restore();
 
-  // Anillo y reflejo
+  // Anillo interior del cristal
   noFill();
-  stroke(...TH.accent, 200);
-  strokeWeight(2.2);
-  ellipse(cx, cy, radius*2, radius*2);
-  stroke(255, 255, 255, 22);
-  strokeWeight(2);
-  arc(cx - radius*0.25, cy - radius*0.32, radius*0.65, radius*0.36, -PI*0.72, -PI*0.08);
+  stroke(...TH.accent, 185);
+  strokeWeight(1.6);
+  ellipse(cx, cy, r*2, r*2);
+
+  // Reflejo principal de la lente
+  stroke(255, 255, 255, 38);
+  strokeWeight(max(1, r * 0.045));
+  arc(cx - r*0.22, cy - r*0.27, r*0.82, r*0.46, -PI*0.76, -PI*0.04);
+
+  // Segundo reflejo (destello pequeño)
+  stroke(255, 255, 255, 20);
+  strokeWeight(max(0.8, r * 0.025));
+  arc(cx - r*0.08, cy - r*0.40, r*0.32, r*0.18, -PI*0.70, -PI*0.10);
+
   noStroke();
 
   if (caption) {
     fill(...TH.muted);
     textAlign(CENTER, TOP);
     textSize(10);
-    text(caption, cx, cy + radius + 6);
+    text(caption, cx, cy + r + 8);
     textAlign(LEFT, BASELINE);
   }
 }
@@ -480,9 +714,9 @@ function drawDensityBar(x, y, w, h, markers) {
   let wx = x + (1.0 / MAX_RHO) * w;
   stroke(...TH.water, 160);
   strokeWeight(1);
-  setLineDash([3, 3]);
+  lineDash([3, 3]);
   line(wx, y-4, wx, y+h+4);
-  setLineDash([]);
+  lineDash([]);
   noStroke();
   fill(...TH.water, 200);
   textSize(8.5);
@@ -509,6 +743,44 @@ function drawDensityBar(x, y, w, h, markers) {
     text(m.rho.toFixed(2).replace('.',','), px, y-12);
   }
   textAlign(LEFT, BASELINE);
+}
+
+// ============================================================
+//  Dibujo: indicador de ampliación (círculo en bloque + líneas a lupa)
+// ============================================================
+function drawZoomIndicator(scx, scy, lcx, lcy, lr) {
+  let sr = 14;
+
+  // Vector perpendicular al eje bloque→lupa
+  let dx = lcx - scx, dy = lcy - scy;
+  let dist = sqrt(dx * dx + dy * dy);
+  if (dist < 1) return;
+  let px = -dy / dist, py = dx / dist;
+
+  // ── Líneas divergentes primero (quedan debajo del círculo) ──
+  stroke(...TH.accent, 170);
+  strokeWeight(1.3);
+  lineDash([6, 5]);
+  line(scx + px * sr, scy + py * sr, lcx + px * lr, lcy + py * lr);
+  line(scx - px * sr, scy - py * sr, lcx - px * lr, lcy - py * lr);
+  lineDash([]);
+  noStroke();
+
+  // ── Pequeño círculo sobre el bloque ──
+  // Sombra oscura para contraste sobre cualquier color de material
+  noFill();
+  stroke(0, 0, 0, 110);
+  strokeWeight(4);
+  ellipse(scx, scy, sr * 2, sr * 2);
+  // Relleno muy tenue
+  fill(255, 255, 255, 30);
+  stroke(255, 255, 255, 225);
+  strokeWeight(1.8);
+  ellipse(scx, scy, sr * 2, sr * 2);
+  // Punto central
+  noStroke();
+  fill(255, 255, 255, 210);
+  ellipse(scx, scy, 4, 4);
 }
 
 // ============================================================
@@ -556,6 +828,15 @@ function densityBarColor(t) {
 
 function lineDash(arr) { drawingContext.setLineDash(arr); }
 
+// RNG determinista sin afectar el estado de p5 random()
+function seededRand(seed) {
+  let s = seed | 0;
+  return function() {
+    s = (Math.imul(1664525, s) + 1013904223) | 0;
+    return (s >>> 0) / 0xFFFFFFFF;
+  };
+}
+
 // ============================================================
 //  MODO: Un objeto
 // ============================================================
@@ -564,11 +845,8 @@ function drawSingleMode() {
   let { bw, bh } = boxSize(s.vol);
   let bx = width * 0.275, by = height * 0.465;
 
-  movePts(ptsSingle, bx, by, bw, bh);
-
   // ── Objeto ──
-  drawBox3D(bx, by, bw, bh, s.mat.col);
-  drawPtsInBox(ptsSingle, bx, by, bw, bh);
+  drawBox2D(bx, by, bw, bh, s.mat);
 
   // Corchete lateral
   drawBracket(bx, by, bw, bh);
@@ -601,15 +879,13 @@ function drawSingleMode() {
   // Vista microscópica
   if (showMicro) {
     let mcy = 290;
-    drawMicroLens(rx, mcy, 88, microSingle, 'Vista microscópica');
 
-    // Línea conectora (desde caja a lupa)
-    stroke(...TH.border, 90);
-    strokeWeight(1);
-    lineDash([4, 5]);
-    line(bx + bw/2 + 4, by, rx - 88, mcy);
-    lineDash([]);
-    noStroke();
+    // Indicador de ampliación: círculo en esquina inferior-derecha del bloque
+    let izx = bx + bw/2 - 22, izy = by + bh/2 - 22;
+    drawZoomIndicator(izx, izy, rx, mcy, 88);
+
+    animateMicro(microSingle, 88, s.mat.cat);
+    drawMicroLens(rx, mcy, 88, microSingle, 'Vista microscópica');
 
     // Etiqueta explicativa (debajo de la leyenda de la lupa)
     fill(...TH.muted);
@@ -633,34 +909,36 @@ function drawSingleMode() {
 function drawCompareMode() {
   let a  = getObjA();
   let b  = getObjB();
-  let sA = cmpSub === 'samevol' ? boxSize(sharedVal) : boxSize(a.vol);
-  let sB = cmpSub === 'samevol' ? boxSize(sharedVal) : boxSize(b.vol);
+  let sA, sB;
+  if (cmpSub === 'samevol') {
+    let sv = boxSize(sharedVal);
+    sA = sv; sB = sv;
+  } else {
+    let pair = boxSizePair(a.vol, b.vol);
+    sA = pair.sA; sB = pair.sB;
+  }
 
   let acx = width*0.255, acy = height*0.480;
   let bcx = width*0.745, bcy = height*0.480;
 
-  movePts(ptsA, acx, acy, sA.bw, sA.bh);
-  movePts(ptsB, bcx, bcy, sB.bw, sB.bh);
-
   // Banner superior
   drawBanner();
 
-  // ── Cajas (primero el fondo) ──
-  drawBox3D(acx, acy, sA.bw, sA.bh, a.mat.col);
-  drawPtsInBox(ptsA, acx, acy, sA.bw, sA.bh);
+  // ── Cajas ──
+  drawBox2D(acx, acy, sA.bw, sA.bh, a.mat);
+  drawBox2D(bcx, bcy, sB.bw, sB.bh, b.mat);
 
-  drawBox3D(bcx, bcy, sB.bw, sB.bh, b.mat.col);
-  drawPtsInBox(ptsB, bcx, bcy, sB.bw, sB.bh);
-
-  // ── Lupa encima de cada caja (sobre las partículas) ──
+  // ── Lupa encima de cada caja ──
   if (showMicro) {
+    animateMicro(microA, 44, a.mat.cat);
+    animateMicro(microB, 44, b.mat.cat);
     drawMicroLens(acx, acy - sA.bh/2 + 52, 44, microA, '');
     drawMicroLens(bcx, bcy - sB.bh/2 + 52, 44, microB, '');
   }
 
   // ── Etiqueta letra A / B ──
   drawLetterBadge('A', acx - sA.bw/2 - 22, acy, COL_A);
-  drawLetterBadge('B', bcx + sB.bw/2 + sB.bw*0.22 + 14, bcy, COL_B);
+  drawLetterBadge('B', bcx + sB.bw/2 + 22, bcy, COL_B);
 
   // ── Info bajo cada caja ──
   drawObjInfo(a, acx, acy + sA.bh/2, COL_A);
@@ -685,8 +963,8 @@ function drawCompareMode() {
 
 function drawBanner() {
   let txt = cmpSub === 'samevol'
-    ? 'MISMO VOLUMEN — Las cajas son iguales. ¿Cuál pesa más?'
-    : 'MISMA MASA — El peso es igual. ¿Qué ocupa más espacio?';
+    ? 'MISMO VOLUMEN — Mismas cajas. La que tiene más partículas, ¿pesa más?'
+    : 'MISMA MASA = MISMAS PARTÍCULAS — ¿Por qué ocupa distinto volumen?';
   let pw = 490, ph = 28;
   fill(...TH.panel, 235);
   stroke(...TH.border);
@@ -737,8 +1015,8 @@ function drawSameVolLines(acx, bcx, cy, bw, bh) {
   stroke(...TH.accent, 70);
   strokeWeight(1);
   lineDash([6, 5]);
-  line(acx - bw/2 - 4, cy - bh/2, bcx + bw/2 + bw*0.22 + 4, cy - bh/2);
-  line(acx - bw/2 - 4, cy + bh/2, bcx + bw/2 + bw*0.22 + 4, cy + bh/2);
+  line(acx - bw/2 - 4, cy - bh/2, bcx + bw/2 + 4, cy - bh/2);
+  line(acx - bw/2 - 4, cy + bh/2, bcx + bw/2 + 4, cy + bh/2);
   lineDash([]);
   noStroke();
   fill(...TH.accent, 140);
