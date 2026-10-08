@@ -168,16 +168,18 @@ function boxSizePair(volA, volB) {
 // ============================================================
 
 // N ∝ ρ: a mayor densidad → más partículas por área de lupa.
-// Radio fijo proporcional al tamaño de la lupa.
+// El tope está en MAX_RHO, así que hierro, cobre y plomo se distinguen.
+// Radio proporcional al tamaño de la lupa; se reduce si no caben sin solaparse.
 function buildMicro(radius, rho, col, cat) {
   let pts = [];
-  let pr  = constrain(radius * MIC_AF, 3, 12);
   // Grid algo más grande que el círculo: el clip de la lupa recorta lo que sobresale
   let gr   = radius * 1.10;
-  let n    = constrain(round(MIC_FILL / (MIC_AF * MIC_AF) * rho), 2, 200);
+  let n    = round(MIC_FILL / (MIC_AF * MIC_AF) * constrain(rho, 0, MAX_RHO));
+  n        = max(2, n);
   let cols = max(1, round(sqrt(n)));
   let rows = max(1, ceil(n / cols));
   let xs = (gr*2)/cols, ys = (gr*2)/rows;
+  let pr  = min(constrain(radius * MIC_AF, 3, 12), min(xs, ys) * 0.42);
   for (let i = 0; i < n; i++) {
     let c = i % cols, r = floor(i / cols);
     let px = -gr + xs*c + xs/2 + random(-xs*0.10, xs*0.10);
