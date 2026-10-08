@@ -797,7 +797,8 @@
         min-height: 100vh;
       }
       .control-panel { overflow: visible; }
-      .simulation-panel { min-height: 440px; }
+      /* En pantallas estrechas, el dibujo primero: es lo que hay que ver */
+      .simulation-panel { min-height: 0; order: -1; }
       body, html { overflow: auto; }
     }
     @media (max-width: 580px) {
