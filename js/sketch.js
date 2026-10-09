@@ -4,25 +4,42 @@
 // ============================================================
 
 // ── Materiales ───────────────────────────────────────────────
+// Vista microscópica (lupa). Sólidos y líquidos tienen siempre las partículas
+// juntas, como en el modelo cinético. La densidad sale de dos cosas que la lupa
+// enseña: cuánto pesa cada partícula (`u`, masa en unidades de masa atómica) y
+// cuántas caben por cm³ (`d`, diámetro relativo al de la molécula de agua,
+// d ∝ n^(-1/3) con el número real de partículas por cm³). Corcho y madera son
+// porosos: `fill` es la fracción de pared (celulosa, ~1,5 g/cm³); el resto, aire.
+//   lat: 'hex' red ordenada · 'liquid' juntas y en movimiento · 'amorph' juntas y
+//        desordenadas · 'cells' pared con celdas de aire
 const MATS = [
-  { id:'corcho', name:'Corcho',        rho:0.18,  col:[215,188,148], cat:'solid'  },
-  { id:'madera', name:'Madera',        rho:0.60,  col:[168,118,72],  cat:'solid'  },
-  { id:'hielo',  name:'Hielo',         rho:0.92,  col:[185,224,242], cat:'solid'  },
-  { id:'agua',   name:'Agua',          rho:1.00,  col:[ 55,130,215], cat:'liquid' },
-  { id:'plast',  name:'Plástico PET',  rho:1.38,  col:[200,195,215], cat:'solid'  },
-  { id:'alum',   name:'Aluminio',      rho:2.70,  col:[188,194,208], cat:'solid'  },
-  { id:'hierro', name:'Hierro',        rho:7.87,  col:[122,130,142], cat:'solid'  },
-  { id:'cobre',  name:'Cobre',         rho:8.96,  col:[200,118,65],  cat:'solid'  },
-  { id:'plomo',  name:'Plomo',         rho:11.34, col:[108,113,124], cat:'solid'  },
-  { id:'custom', name:'Personalizado', rho:null,  col:[155,145,210], cat:'custom' },
+  { id:'corcho', name:'Corcho',        rho:0.18,  col:[215,188,148], cat:'solid',
+    lat:'cells', cell:0.62, fill:0.12, d:0.7, u:162, micro:'Paredes de celulosa con celdas de aire' },
+  { id:'madera', name:'Madera',        rho:0.60,  col:[168,118,72],  cat:'solid',
+    lat:'cells', cell:0.34, fill:0.40, d:0.7, u:162, micro:'Fibras de celulosa con poros de aire' },
+  { id:'hielo',  name:'Hielo',         rho:0.92,  col:[185,224,242], cat:'solid',
+    lat:'hex', gap:1.16, d:1.03, u:18, micro:'Moléculas de agua (18 u) en una red abierta' },
+  { id:'agua',   name:'Agua',          rho:1.00,  col:[ 55,130,215], cat:'liquid',
+    lat:'liquid', d:1.0, gap:1.05, u:18, micro:'Moléculas de agua (18 u), juntas y en movimiento' },
+  { id:'plast',  name:'Plástico PET',  rho:1.38,  col:[200,195,215], cat:'solid',
+    lat:'amorph', d:1.9, u:192, micro:'Eslabones de PET (192 u), juntos y desordenados' },
+  { id:'alum',   name:'Aluminio',      rho:2.70,  col:[188,194,208], cat:'solid',
+    lat:'hex', d:0.83, u:27, micro:'Átomos de aluminio (27 u), muy juntos' },
+  { id:'hierro', name:'Hierro',        rho:7.87,  col:[122,130,142], cat:'solid',
+    lat:'hex', d:0.74, u:56, micro:'Átomos de hierro (56 u), muy juntos' },
+  { id:'cobre',  name:'Cobre',         rho:8.96,  col:[200,118,65],  cat:'solid',
+    lat:'hex', d:0.74, u:64, micro:'Átomos de cobre (64 u), muy juntos' },
+  { id:'plomo',  name:'Plomo',         rho:11.34, col:[108,113,124], cat:'solid',
+    lat:'hex', d:1.0, u:207, micro:'Átomos de plomo (207 u): muy pesados' },
+  { id:'custom', name:'Personalizado', rho:null,  col:[155,145,210], cat:'custom',
+    lat:'hex', d:1.0, u:null, micro:'Material inventado' },
 ];
 
 const MAX_RHO  = 14.0;
 const REF_VOL  = 200;    // cm³ de referencia para escalar cajas
 const ATOM_R   = 2.5;    // radio fijo de partícula en caja macro (px) — NUNCA varía
 const BOX_FILL = 0.058;  // fracción de relleno por unidad de densidad (calibrado: agua≈120 part.)
-const MIC_AF   = 0.055;  // radio partícula micro = lupa_radius × MIC_AF
-const MIC_FILL = 0.18;   // fracción de relleno micro por unidad de densidad
+const MIC_AF   = 0.075;  // radio de una molécula de agua en la lupa = radio_lupa × MIC_AF
 
 // ── Estado global ─────────────────────────────────────────────
 let simMode   = 'single';
@@ -167,28 +184,63 @@ function boxSizePair(volA, volB) {
 //  Partículas (solo para lupa microscópica)
 // ============================================================
 
-// N ∝ ρ: a mayor densidad → más partículas por área de lupa.
-// El tope está en MAX_RHO, así que hierro, cobre y plomo se distinguen.
-// Radio proporcional al tamaño de la lupa; se reduce si no caben sin solaparse.
-function buildMicro(radius, rho, col, cat) {
+// Partículas compactas (se tocan) en una red hexagonal que cubre la lupa.
+// El aspecto depende del material (ver MATS): red ordenada, líquido, desordenado
+// o pared con celdas de aire. El material personalizado no tiene composición
+// conocida: si es menos denso que el agua se dibuja con huecos, y si es más
+// denso, compacto y con partículas más pesadas (más oscuras).
+function buildMicro(radius, mat, rho) {
   let pts = [];
-  // Grid algo más grande que el círculo: el clip de la lupa recorta lo que sobresale
-  let gr   = radius * 1.10;
-  let n    = round(MIC_FILL / (MIC_AF * MIC_AF) * constrain(rho, 0, MAX_RHO));
-  n        = max(2, n);
-  let cols = max(1, round(sqrt(n)));
-  let rows = max(1, ceil(n / cols));
-  let xs = (gr*2)/cols, ys = (gr*2)/rows;
-  let pr  = min(constrain(radius * MIC_AF, 3, 12), min(xs, ys) * 0.42);
-  for (let i = 0; i < n; i++) {
-    let c = i % cols, r = floor(i / cols);
-    let px = -gr + xs*c + xs/2 + random(-xs*0.10, xs*0.10);
-    let py = -gr + ys*r + ys/2 + random(-ys*0.10, ys*0.10);
-    // Sin filtro radial: el clip circular de la lupa oculta lo que sobresale
+  let lat  = mat.lat;
+  let fill = mat.fill || 1;
+  if (mat.cat === 'custom' && rho < 1) { lat = 'cells'; fill = max(0.03, rho); }
+  let pr   = radius * MIC_AF * (mat.d || 1);
+  let step = pr * 2 * (mat.gap || 1.02);
+  let rowH = step * Math.sqrt(3) / 2;
+  let gr   = radius * 1.15;
+  let shade = 1;
+  if (mat.cat === 'custom' && rho > 1) shade = constrain(1.15 - 0.06 * rho, 0.3, 1);
+  let col = mat.col.map(c => round(c * shade));
+
+  // Celdas de aire (corcho, madera): centros en otra red hexagonal. La pared son
+  // las partículas casi equidistantes de las dos celdas más cercanas; su grosor
+  // se ajusta para que quede la fracción de pared que toca.
+  let cells = [];
+  if (lat === 'cells') {
+    let cs = radius * (mat.cell || 0.36) * 2;
+    let ch = cs * Math.sqrt(3) / 2;
+    let r = 0;
+    for (let y = -gr - cs; y <= gr + cs; y += ch, r++) {
+      for (let x = -gr - cs; x <= gr + cs; x += cs) cells.push({ x: x + (r % 2 ? cs / 2 : 0), y });
+    }
+  }
+  let all = [];
+  let row = 0;
+  for (let y = -gr; y <= gr; y += rowH, row++) {
+    for (let x = -gr + (row % 2 ? step / 2 : 0); x <= gr; x += step) {
+      let jx = 0, jy = 0;
+      if (lat === 'amorph' || lat === 'liquid') { jx = random(-0.18, 0.18) * step; jy = random(-0.18, 0.18) * step; }
+      all.push({ x: x + jx, y: y + jy });
+    }
+  }
+  if (lat === 'cells') {
+    for (let p of all) {
+      let d1 = Infinity, d2 = Infinity;
+      for (let c of cells) {
+        let d = dist(p.x, p.y, c.x, c.y);
+        if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
+      }
+      p.dc = d2 - d1;
+    }
+    let sorted = all.map(p => p.dc).sort((a, b) => a - b);
+    let wall = sorted[floor(fill * (sorted.length - 1))];
+    all = all.filter(p => p.dc <= wall);
+  }
+  for (let p of all) {
     let angle = random(TWO_PI);
-    let speed = (cat === 'liquid') ? random(2.8, 5.5) : 0;
+    let speed = lat === 'liquid' ? random(0.6, 1.2) : 0;
     pts.push({
-      x: px, y: py, ox: px, oy: py,
+      x: p.x, y: p.y, ox: p.x, oy: p.y,
       r: pr, col,
       vx: cos(angle) * speed,
       vy: sin(angle) * speed,
@@ -198,44 +250,49 @@ function buildMicro(radius, rho, col, cat) {
   return pts;
 }
 
-// Anima partículas: líquidos con movimiento browniano, sólidos con vibración térmica
+// Anima partículas: el líquido se mueve sin separarse (las partículas se empujan
+// entre sí y siguen tocándose); los sólidos solo vibran en su sitio.
 function animateMicro(pts, radius, cat) {
   if (cat === 'liquid') {
-    let lim = radius * 1.28;
-    let minSpd = 1.8, maxSpd = 5.5;
+    let lim = radius * 1.15;
     for (let p of pts) {
-      // Perturbación browniana: dirección cambia aleatoriamente cada frame
-      p.vx += random(-0.55, 0.55);
-      p.vy += random(-0.55, 0.55);
-      // Mantener velocidad dentro del rango térmico
-      let spd = sqrt(p.vx * p.vx + p.vy * p.vy);
-      if (spd > maxSpd) { p.vx = p.vx/spd * maxSpd; p.vy = p.vy/spd * maxSpd; }
-      if (spd < minSpd) { p.vx = p.vx/spd * minSpd; p.vy = p.vy/spd * minSpd; }
-
+      p.vx += random(-0.25, 0.25);
+      p.vy += random(-0.25, 0.25);
+      let spd = sqrt(p.vx * p.vx + p.vy * p.vy) || 1;
+      if (spd > 1.4) { p.vx *= 1.4 / spd; p.vy *= 1.4 / spd; }
       p.x += p.vx;
       p.y += p.vy;
-
-      // Rebote fuera del área visible — el clip de la lupa lo oculta
+    }
+    // Empujes entre vecinas: mantienen el líquido compacto sin solaparse
+    for (let it = 0; it < 3; it++)
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        let a = pts[i], b = pts[j];
+        let dx = b.x - a.x, dy = b.y - a.y, md = a.r + b.r;
+        if (abs(dx) > md || abs(dy) > md) continue;
+        let d = sqrt(dx * dx + dy * dy) || 0.01;
+        if (d < md) {
+          let o = (md - d) / 2, nx = dx / d, ny = dy / d;
+          a.x -= nx * o; a.y -= ny * o; b.x += nx * o; b.y += ny * o;
+        }
+      }
+    }
+    for (let p of pts) {
       let d = sqrt(p.x * p.x + p.y * p.y);
       if (d > lim) {
         let nx = p.x / d, ny = p.y / d;
         let dot = p.vx * nx + p.vy * ny;
-        p.vx -= 2 * dot * nx;
-        p.vy -= 2 * dot * ny;
-        // Desvío aleatorio en el rebote para romper la simetría radial
-        p.vx += random(-1.0, 1.0);
-        p.vy += random(-1.0, 1.0);
-        p.x = nx * (lim - 1);
-        p.y = ny * (lim - 1);
+        if (dot > 0) { p.vx -= 2 * dot * nx; p.vy -= 2 * dot * ny; }
+        p.x = nx * lim; p.y = ny * lim;
       }
     }
   } else {
-    // Sólidos: vibración oscilatoria + jitter térmico pequeño
+    // Sólidos: vibración pequeña en torno a su posición (no se separan)
     let t = frameCount * 0.18;
     for (let p of pts) {
-      let amp = p.r * 0.55;
-      p.x = p.ox + sin(t * 3.1 + p.phase) * amp + random(-0.4, 0.4);
-      p.y = p.oy + cos(t * 2.7 + p.phase * 1.3) * amp + random(-0.4, 0.4);
+      let amp = p.r * 0.14;
+      p.x = p.ox + sin(t * 3.1 + p.phase) * amp;
+      p.y = p.oy + cos(t * 2.7 + p.phase * 1.3) * amp;
     }
   }
 }
@@ -246,13 +303,13 @@ function buildAll() {
   let b = getObjB();
 
   randomSeed(singleMatIdx*777);
-  microSingle = buildMicro(90, s.rho, s.mat.col, s.mat.cat);
+  microSingle = buildMicro(88, s.mat, s.rho);
 
   randomSeed(matAIdx*333);
-  microA = buildMicro(50, a.rho, a.mat.col, a.mat.cat);
+  microA = buildMicro(44, a.mat, a.rho);
 
   randomSeed(matBIdx*555);
-  microB = buildMicro(50, b.rho, b.mat.col, b.mat.cat);
+  microB = buildMicro(44, b.mat, b.rho);
 
   randomSeed();
 }
@@ -842,6 +899,13 @@ function seededRand(seed) {
 // ============================================================
 //  MODO: Un objeto
 // ============================================================
+// Qué se ve en la lupa, en una línea
+function microCaption(mat, rho) {
+  if (mat.cat !== 'custom') return mat.micro;
+  return rho < 1 ? 'Material inventado: con huecos de aire'
+                 : 'Material inventado: partículas más pesadas cuanto más denso';
+}
+
 function drawSingleMode() {
   let s = getSingle();
   let { bw, bh } = boxSize(s.vol);
@@ -887,13 +951,13 @@ function drawSingleMode() {
     drawZoomIndicator(izx, izy, rx, mcy, 88);
 
     animateMicro(microSingle, 88, s.mat.cat);
-    drawMicroLens(rx, mcy, 88, microSingle, 'Vista microscópica');
+    drawMicroLens(rx, mcy, 88, microSingle, microCaption(s.mat, s.rho));
 
     // Etiqueta explicativa (debajo de la leyenda de la lupa)
     fill(...TH.muted);
     textSize(9.5);
     textAlign(CENTER, TOP);
-    text('+ densidad  →  + partículas/cm³', rx, 402);
+    text('Más densidad: partículas más pesadas o más juntas', rx, 402);
   }
 
   // Fórmula
@@ -965,8 +1029,8 @@ function drawCompareMode() {
 
 function drawBanner() {
   let txt = cmpSub === 'samevol'
-    ? 'MISMO VOLUMEN — Mismas cajas. La que tiene más partículas, ¿pesa más?'
-    : 'MISMA MASA = MISMAS PARTÍCULAS — ¿Por qué ocupa distinto volumen?';
+    ? 'MISMO VOLUMEN — ¿Cuál pesa más? Mira en la lupa cómo son sus partículas'
+    : 'MISMA MASA — ¿Por qué una ocupa más volumen que la otra?';
   let pw = 490, ph = 28;
   fill(...TH.panel, 235);
   stroke(...TH.border);
