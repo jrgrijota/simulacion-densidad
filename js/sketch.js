@@ -782,6 +782,19 @@ function drawDensityBar(x, y, w, h, markers) {
   textAlign(CENTER, TOP);
   text('agua\n1,0', wx, y+h+3);
 
+  // Los que flotan quedan apretados en el primer tramo (0–1): se rotula dentro
+  // de la barra a qué lado del agua está cada grupo.
+  fill(255, 255, 255, 40);
+  rect(x, y, wx - x, h);
+  fill(255);
+  textSize(9);
+  textStyle(BOLD);
+  textAlign(CENTER, CENTER);
+  text('flotan', (x + wx) / 2, y + h / 2);
+  textAlign(LEFT, CENTER);
+  text('se hunden en agua →', wx + 8, y + h / 2);
+  textStyle(NORMAL);
+
   // Escala
   fill(...TH.muted);
   textSize(9);
