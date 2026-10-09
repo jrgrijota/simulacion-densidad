@@ -1093,7 +1093,7 @@ function drawSameVolLines(acx, bcx, cy, bw, bh) {
 }
 
 function drawSameMassBadge(mass) {
-  let ms = mass >= 1000 ? (mass/1000).toFixed(2)+' kg' : mass.toFixed(1)+' g';
+  let ms = mass >= 1000 ? (mass/1000).toFixed(2).replace('.', ',')+' kg' : mass.toFixed(1).replace('.', ',')+' g';
   fill(...TH.warning, 210);
   textSize(10.5);
   textStyle(BOLD);
@@ -1130,7 +1130,7 @@ function populateSelects() {
       let opt = document.createElement('option');
       opt.value = i;
       opt.textContent = m.rho
-        ? m.name + '  (' + m.rho.toFixed(2) + ' g/cm³)'
+        ? m.name + '  (' + m.rho.toFixed(2).replace('.', ',') + ' g/cm³)'
         : m.name;
       el.appendChild(opt);
     });
@@ -1322,10 +1322,10 @@ function updatePanel() {
   }
 
   // Compare readouts
-  setText('rho-a',  a.rho.toFixed(2));
+  setText('rho-a',  a.rho.toFixed(2).replace('.', ','));
   setText('mass-a', fmtVal(a.mass));
   setText('vol-a',  fmtVal(a.vol));
-  setText('rho-b',  b.rho.toFixed(2));
+  setText('rho-b',  b.rho.toFixed(2).replace('.', ','));
   setText('mass-b', fmtVal(b.mass));
   setText('vol-b',  fmtVal(b.vol));
 
@@ -1354,14 +1354,14 @@ function updateCompareResult(rA, rB) {
   let diff = Math.abs(rA - rB);
   if (diff < 0.02) {
     el.className = 'compare-result same';
-    el.innerHTML = 'Misma densidad: ' + rA.toFixed(2) + ' g/cm³.<br>Igual compactación de materia.';
+    el.innerHTML = 'Misma densidad: ' + rA.toFixed(2).replace('.', ',') + ' g/cm³.<br>Igual compactación de materia.';
   } else if (rA > rB) {
     el.className = 'compare-result a-denser';
-    el.innerHTML = '<strong>A es más denso</strong> (' + rA.toFixed(2) + ' vs ' + rB.toFixed(2) + ' g/cm³).<br>'
+    el.innerHTML = '<strong>A es más denso</strong> (' + rA.toFixed(2).replace('.', ',') + ' vs ' + rB.toFixed(2).replace('.', ',') + ' g/cm³).<br>'
       + 'A tiene más materia por cm³.';
   } else {
     el.className = 'compare-result b-denser';
-    el.innerHTML = '<strong>B es más denso</strong> (' + rB.toFixed(2) + ' vs ' + rA.toFixed(2) + ' g/cm³).<br>'
+    el.innerHTML = '<strong>B es más denso</strong> (' + rB.toFixed(2).replace('.', ',') + ' vs ' + rA.toFixed(2).replace('.', ',') + ' g/cm³).<br>'
       + 'B tiene más materia por cm³.';
   }
 }
