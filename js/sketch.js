@@ -871,9 +871,9 @@ function drawBracket(cx, cy, bw, bh) {
   push();
   translate(rx+13, cy);
   rotate(-HALF_PI);
-  textSize(9);
+  textSize(10);
   textAlign(CENTER, CENTER);
-  text('altura ∝ ∛V', 0, 0);
+  text('tamaño no proporcional a V', 0, 0);
   pop();
 }
 
