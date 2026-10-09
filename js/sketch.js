@@ -1379,7 +1379,7 @@ function setText(id, txt) {
 }
 
 function fmtVal(v) {
-  if (v >= 10000) return (v/1000).toFixed(1).replace('.', ',');
+  if (v >= 10000) return (v/1000).toFixed(1).replace('.', ',') + '·10³';
   if (v >= 1000)  return (v/1000).toFixed(2).replace('.', ',') + '·10³';
   if (v >= 100)   return v.toFixed(1).replace('.', ',');
   return v.toFixed(2).replace('.', ',');
