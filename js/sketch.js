@@ -1304,7 +1304,7 @@ function updatePanel() {
   setText('formula-nums', fms);
 
   // Float badge
-  updateFloatBadge(s.rho);
+  updateFloatBadge(s.rho, s.mat.id === 'agua');
 
   // Compare shared
   if (cmpSub === 'samevol') {
@@ -1332,11 +1332,15 @@ function updatePanel() {
   updateCompareResult(a.rho, b.rho);
 }
 
-function updateFloatBadge(rho) {
+function updateFloatBadge(rho, esAgua) {
   let el = document.getElementById('float-badge');
   if (!el) return;
   let r = rho.toFixed(2).replace('.', ',');
-  if (rho < 0.995) {
+  if (esAgua) {
+    // «El agua queda en equilibrio en agua» no dice nada: es la referencia
+    el.className = 'float-badge equilibrio';
+    el.innerHTML = 'ρ = ' + r + ' g/cm³: <strong>es la referencia</strong> para saber si algo flota';
+  } else if (rho < 0.995) {
     el.className = 'float-badge flota';
     el.innerHTML = 'ρ = ' + r + ' g/cm³ &lt; 1 → <strong>flota en agua</strong> ↑';
   } else if (rho > 1.005) {
