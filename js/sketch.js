@@ -662,7 +662,7 @@ function drawParticleCount(cx, cy, n, rho) {
   fill(...TH.accent);
   textSize(11);
   textAlign(CENTER, CENTER);
-  text('≈ ' + n + ' partículas por lupa', cx, cy);
+  text(i18n.t('≈ {n} partículas por lupa', { n: n }), cx, cy);
   textAlign(LEFT, BASELINE);
 }
 
@@ -670,7 +670,7 @@ function drawParticleCount(cx, cy, n, rho) {
 //  Dibujo: display densidad (panel derecho modo single)
 // ============================================================
 function drawDensityDisplay(rho, matCol, cx, cy) {
-  let str = rho < 0.01 ? rho.toExponential(2) : rho.toFixed(2).replace('.', ',');
+  let str = rho < 0.01 ? rho.toExponential(2) : i18n.num(rho, 2);
   let col  = densityRGBColor(rho);
   let pw = 208, ph = 78;
 
@@ -684,7 +684,7 @@ function drawDensityDisplay(rho, matCol, cx, cy) {
   fill(...TH.muted);
   textSize(10);
   textAlign(CENTER, TOP);
-  text('DENSIDAD  (ρ)', cx, cy-ph/2+9);
+  text(i18n.t('DENSIDAD  (ρ)'), cx, cy-ph/2+9);
 
   // Punto de color densidad
   fill(...col);
@@ -727,9 +727,9 @@ function drawFormulaCanvas(mass, vol, rho, cx, cy) {
   fill(...TH.accent);
   textSize(11.5);
   textAlign(CENTER, CENTER);
-  let ms = mass >= 1000 ? (mass/1000).toFixed(2).replace('.',',')+' kg' : mass.toFixed(1).replace('.',',')+' g';
+  let ms = mass >= 1000 ? i18n.num(mass/1000, 2)+' kg' : i18n.num(mass, 1)+' g';
   let vs = vol.toFixed(0)+' cm³';
-  let rs = rho.toFixed(3).replace('.',',')+' g/cm³';
+  let rs = i18n.num(rho, 3)+' g/cm³';
   text(ms + '  ÷  ' + vs, cx, cy+2);
   text('=  ' + rs, cx, cy+16);
   textAlign(LEFT, BASELINE);
@@ -780,7 +780,7 @@ function drawDensityBar(x, y, w, h, markers) {
   fill(...TH.water, 200);
   textSize(8.5);
   textAlign(CENTER, TOP);
-  text('agua\n1,0', wx, y+h+3);
+  text(i18n.t('agua\n1,0'), wx, y+h+3);
 
   // Los que flotan quedan apretados en el primer tramo (0–1): se rotula dentro
   // de la barra a qué lado del agua está cada grupo.
@@ -790,9 +790,9 @@ function drawDensityBar(x, y, w, h, markers) {
   textSize(9);
   textStyle(BOLD);
   textAlign(CENTER, CENTER);
-  text('flotan', (x + wx) / 2, y + h / 2);
+  text(i18n.t('flotan'), (x + wx) / 2, y + h / 2);
   textAlign(LEFT, CENTER);
-  text('se hunden en agua →', wx + 8, y + h / 2);
+  text(i18n.t('se hunden en agua →'), wx + 8, y + h / 2);
   textStyle(NORMAL);
 
   // Escala
@@ -812,7 +812,7 @@ function drawDensityBar(x, y, w, h, markers) {
     fill(...TH.text);
     textSize(9.5);
     textAlign(CENTER, BOTTOM);
-    text(m.rho.toFixed(2).replace('.',','), px, y-12);
+    text(i18n.num(m.rho, 2), px, y-12);
   }
   textAlign(LEFT, BASELINE);
 }
@@ -873,7 +873,7 @@ function drawBracket(cx, cy, bw, bh) {
   rotate(-HALF_PI);
   textSize(10);
   textAlign(CENTER, CENTER);
-  text('tamaño no proporcional a V', 0, 0);
+  text(i18n.t('tamaño no proporcional a V'), 0, 0);
   pop();
 }
 
@@ -914,9 +914,9 @@ function seededRand(seed) {
 // ============================================================
 // Qué se ve en la lupa, en una línea
 function microCaption(mat, rho) {
-  if (mat.cat !== 'custom') return mat.micro;
-  return rho < 1 ? 'Material inventado: con huecos de aire'
-                 : 'Material inventado: partículas más pesadas cuanto más denso';
+  if (mat.cat !== 'custom') return i18n.t(mat.micro);
+  return rho < 1 ? i18n.t('Material inventado: con huecos de aire')
+                 : i18n.t('Material inventado: partículas más pesadas cuanto más denso');
 }
 
 function drawSingleMode() {
@@ -931,7 +931,7 @@ function drawSingleMode() {
   drawBracket(bx, by, bw, bh);
 
   // Anotaciones
-  let ms = s.mass >= 1000 ? (s.mass/1000).toFixed(2).replace('.',',')+' kg' : s.mass.toFixed(1).replace('.',',')+' g';
+  let ms = s.mass >= 1000 ? i18n.num(s.mass/1000, 2)+' kg' : i18n.num(s.mass, 1)+' g';
   drawAnnotationPill('m = ' + ms, bx, by + bh/2 + 22);
   drawAnnotationPill('V = ' + s.vol.toFixed(0)+' cm³', bx, by - bh/2 - 22);
 
@@ -940,7 +940,7 @@ function drawSingleMode() {
   textSize(13);
   textStyle(BOLD);
   textAlign(CENTER, TOP);
-  text(s.mat.name.toUpperCase(), bx, by + bh/2 + 40);
+  text(i18n.t(s.mat.name).toUpperCase(), bx, by + bh/2 + 40);
   textStyle(NORMAL);
 
   // ── Panel derecho ──
@@ -950,7 +950,7 @@ function drawSingleMode() {
   fill(...TH.muted);
   textSize(9.5);
   textAlign(CENTER, TOP);
-  text('ANÁLISIS DEL MATERIAL', rx, 14);
+  text(i18n.t('ANÁLISIS DEL MATERIAL'), rx, 14);
 
   // Densidad grande
   drawDensityDisplay(s.rho, s.mat.col, rx, 108);
@@ -970,7 +970,7 @@ function drawSingleMode() {
     fill(...TH.muted);
     textSize(9.5);
     textAlign(CENTER, TOP);
-    text('Más densidad: partículas más pesadas o más juntas', rx, 402);
+    text(i18n.t('Más densidad: partículas más pesadas o más juntas'), rx, 402);
   }
 
   // Fórmula
@@ -1042,8 +1042,8 @@ function drawCompareMode() {
 
 function drawBanner() {
   let txt = cmpSub === 'samevol'
-    ? 'MISMO VOLUMEN — ¿Cuál pesa más? Mira en la lupa cómo son sus partículas'
-    : 'MISMA MASA — ¿Por qué una ocupa más volumen que la otra?';
+    ? i18n.t('MISMO VOLUMEN — ¿Cuál pesa más? Mira en la lupa cómo son sus partículas')
+    : i18n.t('MISMA MASA — ¿Por qué una ocupa más volumen que la otra?');
   let pw = 490, ph = 28;
   fill(...TH.panel, 235);
   stroke(...TH.border);
@@ -1075,15 +1075,15 @@ function drawObjInfo(obj, cx, bottomY, col) {
   textSize(12.5);
   textStyle(BOLD);
   textAlign(CENTER, TOP);
-  text(obj.mat.name, cx, bottomY + 14);
+  text(i18n.t(obj.mat.name), cx, bottomY + 14);
   textStyle(NORMAL);
 
   fill(...TH.muted);
   textSize(10);
-  text('ρ = ' + obj.rho.toFixed(2).replace('.',',') + ' g/cm³', cx, bottomY + 30);
+  text('ρ = ' + i18n.num(obj.rho, 2) + ' g/cm³', cx, bottomY + 30);
 
   // Masa y volumen
-  let ms = obj.mass >= 1000 ? (obj.mass/1000).toFixed(2).replace('.',',')+' kg' : obj.mass.toFixed(1).replace('.',',')+' g';
+  let ms = obj.mass >= 1000 ? i18n.num(obj.mass/1000, 2)+' kg' : i18n.num(obj.mass, 1)+' g';
   let vs = obj.vol.toFixed(0)+' cm³';
   text('m = ' + ms + '   V = ' + vs, cx, bottomY + 44);
 
@@ -1101,17 +1101,17 @@ function drawSameVolLines(acx, bcx, cy, bw, bh) {
   fill(...TH.accent, 140);
   textSize(9);
   textAlign(CENTER, BOTTOM);
-  text('← mismo volumen →', width/2, cy - bh/2 - 5);
+  text(i18n.t('← mismo volumen →'), width/2, cy - bh/2 - 5);
   textAlign(LEFT, BASELINE);
 }
 
 function drawSameMassBadge(mass) {
-  let ms = mass >= 1000 ? (mass/1000).toFixed(2).replace('.', ',')+' kg' : mass.toFixed(1).replace('.', ',')+' g';
+  let ms = mass >= 1000 ? i18n.num(mass/1000, 2)+' kg' : i18n.num(mass, 1)+' g';
   fill(...TH.warning, 210);
   textSize(10.5);
   textStyle(BOLD);
   textAlign(CENTER, TOP);
-  text('Misma masa: ' + ms, width/2, height/2 + 15);
+  text(i18n.t('Misma masa: {m}', { m: ms }), width/2, height/2 + 15);
   textStyle(NORMAL);
   textAlign(LEFT, BASELINE);
 }
@@ -1143,8 +1143,8 @@ function populateSelects() {
       let opt = document.createElement('option');
       opt.value = i;
       opt.textContent = m.rho
-        ? m.name + '  (' + m.rho.toFixed(2).replace('.', ',') + ' g/cm³)'
-        : m.name;
+        ? i18n.t(m.name) + '  (' + i18n.num(m.rho, 2) + ' g/cm³)'
+        : i18n.t(m.name);
       el.appendChild(opt);
     });
   }
@@ -1310,10 +1310,10 @@ function updatePanel() {
   // Readouts single
   setText('read-mass', fmtVal(s.mass));
   setText('read-vol',  fmtVal(s.vol));
-  setText('read-rho',  s.rho.toFixed(2).replace('.', ','));
+  setText('read-rho',  i18n.num(s.rho, 2));
 
   // Fórmula
-  let fms = fmtVal(s.mass)+' g / '+fmtVal(s.vol)+' cm³ = '+s.rho.toFixed(3).replace('.',',')+' g/cm³';
+  let fms = fmtVal(s.mass)+' g / '+fmtVal(s.vol)+' cm³ = '+i18n.num(s.rho, 3)+' g/cm³';
   setText('formula-nums', fms);
 
   // Float badge
@@ -1321,24 +1321,24 @@ function updatePanel() {
 
   // Compare shared
   if (cmpSub === 'samevol') {
-    setText('shared-label', 'Volumen compartido');
+    setText('shared-label', i18n.t('Volumen compartido'));
     setText('shared-val',   sharedVal + ' cm³');
     setText('shared-min',   '10 cm³');
     setText('shared-max',   '1000 cm³');
-    setText('shared-hint',  'Los dos objetos ocupan exactamente el mismo volumen.');
+    setText('shared-hint',  i18n.t('Los dos objetos ocupan exactamente el mismo volumen.'));
   } else {
-    setText('shared-label', 'Masa compartida');
+    setText('shared-label', i18n.t('Masa compartida'));
     setText('shared-val',   sharedVal + ' g');
     setText('shared-min',   '10 g');
     setText('shared-max',   '1000 g');
-    setText('shared-hint',  'Los dos objetos tienen exactamente la misma masa.');
+    setText('shared-hint',  i18n.t('Los dos objetos tienen exactamente la misma masa.'));
   }
 
   // Compare readouts
-  setText('rho-a',  a.rho.toFixed(2).replace('.', ','));
+  setText('rho-a',  i18n.num(a.rho, 2));
   setText('mass-a', fmtVal(a.mass));
   setText('vol-a',  fmtVal(a.vol));
-  setText('rho-b',  b.rho.toFixed(2).replace('.', ','));
+  setText('rho-b',  i18n.num(b.rho, 2));
   setText('mass-b', fmtVal(b.mass));
   setText('vol-b',  fmtVal(b.vol));
 
@@ -1348,20 +1348,20 @@ function updatePanel() {
 function updateFloatBadge(rho, esAgua) {
   let el = document.getElementById('float-badge');
   if (!el) return;
-  let r = rho.toFixed(2).replace('.', ',');
+  let r = i18n.num(rho, 2);
   if (esAgua) {
     // «El agua queda en equilibrio en agua» no dice nada: es la referencia
     el.className = 'float-badge equilibrio';
-    el.innerHTML = 'ρ = ' + r + ' g/cm³: <strong>es la referencia</strong> para saber si algo flota';
+    el.innerHTML = i18n.t('ρ = {r} g/cm³: <strong>es la referencia</strong> para saber si algo flota', { r: r });
   } else if (rho < 0.995) {
     el.className = 'float-badge flota';
-    el.innerHTML = 'ρ = ' + r + ' g/cm³ &lt; 1 → <strong>flota en agua</strong> ↑';
+    el.innerHTML = i18n.t('ρ = {r} g/cm³ &lt; 1 → <strong>flota en agua</strong> ↑', { r: r });
   } else if (rho > 1.005) {
     el.className = 'float-badge hunde';
-    el.innerHTML = 'ρ = ' + r + ' g/cm³ &gt; 1 → <strong>se hunde en agua</strong> ↓';
+    el.innerHTML = i18n.t('ρ = {r} g/cm³ &gt; 1 → <strong>se hunde en agua</strong> ↓', { r: r });
   } else {
     el.className = 'float-badge equilibrio';
-    el.innerHTML = 'ρ = ' + r + ' g/cm³ ≈ 1 → <strong>equilibrio en agua</strong> ⇌';
+    el.innerHTML = i18n.t('ρ = {r} g/cm³ ≈ 1 → <strong>equilibrio en agua</strong> ⇌', { r: r });
   }
 }
 
@@ -1371,15 +1371,13 @@ function updateCompareResult(rA, rB) {
   let diff = Math.abs(rA - rB);
   if (diff < 0.02) {
     el.className = 'compare-result same';
-    el.innerHTML = 'Misma densidad: ' + rA.toFixed(2).replace('.', ',') + ' g/cm³.<br>Igual compactación de materia.';
+    el.innerHTML = i18n.t('Misma densidad: {r} g/cm³.<br>Igual compactación de materia.', { r: i18n.num(rA, 2) });
   } else if (rA > rB) {
     el.className = 'compare-result a-denser';
-    el.innerHTML = '<strong>A es más denso</strong> (' + rA.toFixed(2).replace('.', ',') + ' vs ' + rB.toFixed(2).replace('.', ',') + ' g/cm³).<br>'
-      + 'A tiene más materia por cm³.';
+    el.innerHTML = i18n.t('<strong>A es más denso</strong> ({a} vs {b} g/cm³).<br>A tiene más materia por cm³.', { a: i18n.num(rA, 2), b: i18n.num(rB, 2) });
   } else {
     el.className = 'compare-result b-denser';
-    el.innerHTML = '<strong>B es más denso</strong> (' + rB.toFixed(2).replace('.', ',') + ' vs ' + rA.toFixed(2).replace('.', ',') + ' g/cm³).<br>'
-      + 'B tiene más materia por cm³.';
+    el.innerHTML = i18n.t('<strong>B es más denso</strong> ({b} vs {a} g/cm³).<br>B tiene más materia por cm³.', { a: i18n.num(rA, 2), b: i18n.num(rB, 2) });
   }
 }
 
@@ -1396,8 +1394,8 @@ function setText(id, txt) {
 }
 
 function fmtVal(v) {
-  if (v >= 10000) return (v/1000).toFixed(1).replace('.', ',') + '·10³';
-  if (v >= 1000)  return (v/1000).toFixed(2).replace('.', ',') + '·10³';
-  if (v >= 100)   return v.toFixed(1).replace('.', ',');
-  return v.toFixed(2).replace('.', ',');
+  if (v >= 10000) return i18n.num(v/1000, 1) + '·10³';
+  if (v >= 1000)  return i18n.num(v/1000, 2) + '·10³';
+  if (v >= 100)   return i18n.num(v, 1);
+  return i18n.num(v, 2);
 }
