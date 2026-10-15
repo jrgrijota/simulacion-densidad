@@ -101,5 +101,7 @@ window.I18N_EN = {
   'MISMO VOLUMEN — ¿Cuál pesa más? Mira en la lupa cómo son sus partículas': 'SAME VOLUME — Which is heavier? Look at the particles under the magnifier',
   'MISMA MASA — ¿Por qué una ocupa más volumen que la otra?': 'SAME MASS — Why does one take up more space than the other?',
   '← mismo volumen →': '← same volume →',
-  'Misma masa: {m}': 'Same mass: {m}'
+  'Misma masa: {m}': 'Same mass: {m}',
+  // Sello de la zona de simulación (js/sello.js)
+  'Más simulaciones en simulaciencia.es': 'More simulations at simulaciencia.es'
 };
