@@ -29,7 +29,7 @@
       --bg-input:         #1c2230;
       --bg-hover:         #202838;
       --text-main:        #d0d8e8;
-      --text-muted:       #6878a0;
+      --text-muted:       #7f8daf;
       --text-label:       #8898b8;
       --accent:           #00c8ff;
       --accent-strong:    #40d8ff;
@@ -43,7 +43,7 @@
       --warning:          #f0a832;
       --warning-bg:       rgba(240,168,50,0.10);
       --warning-border:   rgba(240,168,50,0.28);
-      --danger:           #e84848;
+      --danger:           #eb5f5f;
       --danger-bg:        rgba(232,72,72,0.10);
       --danger-border:    rgba(232,72,72,0.28);
       --col-a:            #4f8ef7;
@@ -63,25 +63,25 @@
       --bg-input:         #e8ebf4;
       --bg-hover:         #dde2ee;
       --text-main:        #1a2036;
-      --text-muted:       #6070a0;
+      --text-muted:       #566590;
       --text-label:       #485880;
-      --accent:           #0088cc;
+      --accent:           #006ba1;
       --accent-strong:    #0066aa;
       --accent-soft:      rgba(0,136,204,0.10);
       --accent-border:    rgba(0,136,204,0.30);
       --border-main:      #c8cedc;
       --border-strong:    #a8b0c8;
-      --success:          #1a9a5a;
+      --success:          #157b48;
       --success-bg:       rgba(26,154,90,0.10);
       --success-border:   rgba(26,154,90,0.30);
-      --warning:          #c08020;
+      --warning:          #8e5e18;
       --warning-bg:       rgba(192,128,32,0.10);
       --warning-border:   rgba(192,128,32,0.30);
       --danger:           #c02828;
       --danger-bg:        rgba(192,40,40,0.10);
       --danger-border:    rgba(192,40,40,0.30);
       --col-a:            #1868d8;
-      --col-b:            #d85820;
+      --col-b:            #bb4c1c;
       --col-a-bg:         rgba(24,104,216,0.10);
       --col-b-bg:         rgba(216,88,32,0.10);
       --col-a-border:     rgba(24,104,216,0.30);
@@ -282,7 +282,7 @@
     .mode-sub {
       font-size: 0.67rem;
       font-weight: 400;
-      opacity: 0.75;
+      opacity: 1;
     }
 
     /* ── Label + value row ─────────────────────────────── */
@@ -719,11 +719,15 @@
       box-shadow: var(--shadow-pop, 0 12px 32px rgba(0,0,0,0.5));
       opacity: 0;
       pointer-events: none;
+      /* Cerrado: fuera del tabulador y de los lectores de pantalla */
+      visibility: hidden;
       transform: translateY(8px);
-      transition: opacity 0.18s ease, transform 0.18s ease;
+      transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
     }
     .theme-panel.is-open {
       opacity: 1;
+      visibility: visible;
+      transition-delay: 0s;
       pointer-events: all;
       transform: translateY(0);
     }
