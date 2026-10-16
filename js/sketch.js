@@ -4,47 +4,27 @@
 // ============================================================
 
 // ── Materiales ───────────────────────────────────────────────
-// Vista microscópica (lupa). Sólidos y líquidos tienen siempre las partículas
-// juntas, como en el modelo cinético. La densidad sale de dos cosas que la lupa
-// enseña: cuánto pesa cada partícula (`u`, masa en unidades de masa atómica) y
-// cuántas caben por cm³ (`d`, diámetro relativo al de la molécula de agua,
-// d ∝ n^(-1/3) con el número real de partículas por cm³). Corcho y madera son
-// porosos: `fill` es la fracción de pared (celulosa, ~1,5 g/cm³); el resto, aire.
-//   lat: 'hex' red ordenada · 'liquid' juntas y en movimiento · 'amorph' juntas y
-//        desordenadas · 'cells' pared con celdas de aire
+// Solo escala macroscópica: cada material es un bloque con su color y textura.
+// La comparación entre materiales se hace con una balanza de brazos.
 const MATS = [
-  { id:'corcho', name:'Corcho',        rho:0.18,  col:[215,188,148], cat:'solid',
-    lat:'cells', cell:0.62, fill:0.12, d:0.7, u:162, micro:'Paredes de celulosa con celdas de aire' },
-  { id:'madera', name:'Madera',        rho:0.60,  col:[168,118,72],  cat:'solid',
-    lat:'cells', cell:0.34, fill:0.40, d:0.7, u:162, micro:'Fibras de celulosa con poros de aire' },
-  { id:'hielo',  name:'Hielo',         rho:0.92,  col:[185,224,242], cat:'solid',
-    lat:'hex', gap:1.16, d:1.03, u:18, micro:'Moléculas de agua (18 u) en una red abierta' },
-  { id:'agua',   name:'Agua',          rho:1.00,  col:[ 55,130,215], cat:'liquid',
-    lat:'liquid', d:1.0, gap:1.05, u:18, micro:'Moléculas de agua (18 u), juntas y en movimiento' },
-  { id:'plast',  name:'Plástico PET',  rho:1.38,  col:[200,195,215], cat:'solid',
-    lat:'amorph', d:1.9, u:192, micro:'Eslabones de PET (192 u), juntos y desordenados' },
-  { id:'alum',   name:'Aluminio',      rho:2.70,  col:[188,194,208], cat:'solid',
-    lat:'hex', d:0.83, u:27, micro:'Átomos de aluminio (27 u), muy juntos' },
-  { id:'hierro', name:'Hierro',        rho:7.87,  col:[122,130,142], cat:'solid',
-    lat:'hex', d:0.74, u:56, micro:'Átomos de hierro (56 u), muy juntos' },
-  { id:'cobre',  name:'Cobre',         rho:8.96,  col:[200,118,65],  cat:'solid',
-    lat:'hex', d:0.74, u:64, micro:'Átomos de cobre (64 u), muy juntos' },
-  { id:'plomo',  name:'Plomo',         rho:11.34, col:[108,113,124], cat:'solid',
-    lat:'hex', d:1.0, u:207, micro:'Átomos de plomo (207 u): muy pesados' },
-  { id:'custom', name:'Personalizado', rho:null,  col:[155,145,210], cat:'custom',
-    lat:'hex', d:1.0, u:null, micro:'Material inventado' },
+  { id:'corcho', name:'Corcho',        rho:0.18,  col:[215,188,148], cat:'solid'  },
+  { id:'madera', name:'Madera',        rho:0.60,  col:[168,118,72],  cat:'solid'  },
+  { id:'hielo',  name:'Hielo',         rho:0.92,  col:[185,224,242], cat:'solid'  },
+  { id:'agua',   name:'Agua',          rho:1.00,  col:[ 55,130,215], cat:'liquid' },
+  { id:'plast',  name:'Plástico PET',  rho:1.38,  col:[200,195,215], cat:'solid'  },
+  { id:'alum',   name:'Aluminio',      rho:2.70,  col:[188,194,208], cat:'solid'  },
+  { id:'hierro', name:'Hierro',        rho:7.87,  col:[122,130,142], cat:'solid'  },
+  { id:'cobre',  name:'Cobre',         rho:8.96,  col:[200,118,65],  cat:'solid'  },
+  { id:'plomo',  name:'Plomo',         rho:11.34, col:[108,113,124], cat:'solid'  },
+  { id:'custom', name:'Personalizado', rho:null,  col:[155,145,210], cat:'custom' },
 ];
 
 const MAX_RHO  = 14.0;
 const REF_VOL  = 200;    // cm³ de referencia para escalar cajas
-const ATOM_R   = 2.5;    // radio fijo de partícula en caja macro (px) — NUNCA varía
-const BOX_FILL = 0.058;  // fracción de relleno por unidad de densidad (calibrado: agua≈120 part.)
-const MIC_AF   = 0.075;  // radio de una molécula de agua en la lupa = radio_lupa × MIC_AF
 
 // ── Estado global ─────────────────────────────────────────────
 let simMode   = 'single';
 let cmpSub    = 'samevol';
-let showMicro = true;
 
 let singleMatIdx = 3;
 let singleVol    = 200;
@@ -54,10 +34,6 @@ let customVol    = 200;
 let matAIdx   = 1;
 let matBIdx   = 6;
 let sharedVal = 200;
-
-// ── Partículas (solo lupa microscópica) ─────────────────────
-let microSingle = [], microA = [], microB = [];
-let needRebuild = true;
 
 // ── Tema canvas ────────────────────────────────────────────
 let TH;
@@ -118,11 +94,6 @@ function draw() {
   let t = document.documentElement.getAttribute('data-theme') || 'dark';
   TH = CANVAS_THEMES[t] || CANVAS_THEMES.dark;
 
-  if (needRebuild) {
-    buildAll();
-    needRebuild = false;
-  }
-
   background(...TH.bg);
   drawGrid();
 
@@ -178,140 +149,6 @@ function boxSizePair(volA, volB) {
     sA: { bw: baseW * scA, bh: baseH * scA },
     sB: { bw: baseW * scB, bh: baseH * scB }
   };
-}
-
-// ============================================================
-//  Partículas (solo para lupa microscópica)
-// ============================================================
-
-// Partículas compactas (se tocan) en una red hexagonal que cubre la lupa.
-// El aspecto depende del material (ver MATS): red ordenada, líquido, desordenado
-// o pared con celdas de aire. El material personalizado no tiene composición
-// conocida: si es menos denso que el agua se dibuja con huecos, y si es más
-// denso, compacto y con partículas más pesadas (más oscuras).
-function buildMicro(radius, mat, rho) {
-  let pts = [];
-  let lat  = mat.lat;
-  let fill = mat.fill || 1;
-  if (mat.cat === 'custom' && rho < 1) { lat = 'cells'; fill = max(0.03, rho); }
-  let pr   = radius * MIC_AF * (mat.d || 1);
-  let step = pr * 2 * (mat.gap || 1.02);
-  let rowH = step * Math.sqrt(3) / 2;
-  let gr   = radius * 1.15;
-  let shade = 1;
-  if (mat.cat === 'custom' && rho > 1) shade = constrain(1.15 - 0.06 * rho, 0.3, 1);
-  let col = mat.col.map(c => round(c * shade));
-
-  // Celdas de aire (corcho, madera): centros en otra red hexagonal. La pared son
-  // las partículas casi equidistantes de las dos celdas más cercanas; su grosor
-  // se ajusta para que quede la fracción de pared que toca.
-  let cells = [];
-  if (lat === 'cells') {
-    let cs = radius * (mat.cell || 0.36) * 2;
-    let ch = cs * Math.sqrt(3) / 2;
-    let r = 0;
-    for (let y = -gr - cs; y <= gr + cs; y += ch, r++) {
-      for (let x = -gr - cs; x <= gr + cs; x += cs) cells.push({ x: x + (r % 2 ? cs / 2 : 0), y });
-    }
-  }
-  let all = [];
-  let row = 0;
-  for (let y = -gr; y <= gr; y += rowH, row++) {
-    for (let x = -gr + (row % 2 ? step / 2 : 0); x <= gr; x += step) {
-      let jx = 0, jy = 0;
-      if (lat === 'amorph' || lat === 'liquid') { jx = random(-0.18, 0.18) * step; jy = random(-0.18, 0.18) * step; }
-      all.push({ x: x + jx, y: y + jy });
-    }
-  }
-  if (lat === 'cells') {
-    for (let p of all) {
-      let d1 = Infinity, d2 = Infinity;
-      for (let c of cells) {
-        let d = dist(p.x, p.y, c.x, c.y);
-        if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
-      }
-      p.dc = d2 - d1;
-    }
-    let sorted = all.map(p => p.dc).sort((a, b) => a - b);
-    let wall = sorted[floor(fill * (sorted.length - 1))];
-    all = all.filter(p => p.dc <= wall);
-  }
-  for (let p of all) {
-    let angle = random(TWO_PI);
-    let speed = lat === 'liquid' ? random(0.6, 1.2) : 0;
-    pts.push({
-      x: p.x, y: p.y, ox: p.x, oy: p.y,
-      r: pr, col,
-      vx: cos(angle) * speed,
-      vy: sin(angle) * speed,
-      phase: random(TWO_PI)
-    });
-  }
-  return pts;
-}
-
-// Anima partículas: el líquido se mueve sin separarse (las partículas se empujan
-// entre sí y siguen tocándose); los sólidos solo vibran en su sitio.
-function animateMicro(pts, radius, cat) {
-  if (cat === 'liquid') {
-    let lim = radius * 1.15;
-    for (let p of pts) {
-      p.vx += random(-0.25, 0.25);
-      p.vy += random(-0.25, 0.25);
-      let spd = sqrt(p.vx * p.vx + p.vy * p.vy) || 1;
-      if (spd > 1.4) { p.vx *= 1.4 / spd; p.vy *= 1.4 / spd; }
-      p.x += p.vx;
-      p.y += p.vy;
-    }
-    // Empujes entre vecinas: mantienen el líquido compacto sin solaparse
-    for (let it = 0; it < 3; it++)
-    for (let i = 0; i < pts.length; i++) {
-      for (let j = i + 1; j < pts.length; j++) {
-        let a = pts[i], b = pts[j];
-        let dx = b.x - a.x, dy = b.y - a.y, md = a.r + b.r;
-        if (abs(dx) > md || abs(dy) > md) continue;
-        let d = sqrt(dx * dx + dy * dy) || 0.01;
-        if (d < md) {
-          let o = (md - d) / 2, nx = dx / d, ny = dy / d;
-          a.x -= nx * o; a.y -= ny * o; b.x += nx * o; b.y += ny * o;
-        }
-      }
-    }
-    for (let p of pts) {
-      let d = sqrt(p.x * p.x + p.y * p.y);
-      if (d > lim) {
-        let nx = p.x / d, ny = p.y / d;
-        let dot = p.vx * nx + p.vy * ny;
-        if (dot > 0) { p.vx -= 2 * dot * nx; p.vy -= 2 * dot * ny; }
-        p.x = nx * lim; p.y = ny * lim;
-      }
-    }
-  } else {
-    // Sólidos: vibración pequeña en torno a su posición (no se separan)
-    let t = frameCount * 0.18;
-    for (let p of pts) {
-      let amp = p.r * 0.14;
-      p.x = p.ox + sin(t * 3.1 + p.phase) * amp;
-      p.y = p.oy + cos(t * 2.7 + p.phase * 1.3) * amp;
-    }
-  }
-}
-
-function buildAll() {
-  let s = getSingle();
-  let a = getObjA();
-  let b = getObjB();
-
-  randomSeed(singleMatIdx*777);
-  microSingle = buildMicro(88, s.mat, s.rho);
-
-  randomSeed(matAIdx*333);
-  microA = buildMicro(44, a.mat, a.rho);
-
-  randomSeed(matBIdx*555);
-  microB = buildMicro(44, b.mat, b.rho);
-
-  randomSeed();
 }
 
 // ============================================================
@@ -575,98 +412,6 @@ function drawMaterialTexture(mat, x, y, bw, bh) {
 }
 
 // ============================================================
-//  Dibujo: vista microscópica (lupa)
-// ============================================================
-function drawMicroLens(cx, cy, radius, microPts, caption) {
-  let r = radius;
-
-  // Marco exterior del objetivo (anillo metálico)
-  noFill();
-  stroke(...TH.border, 200);
-  strokeWeight(r * 0.13 + 2);
-  ellipse(cx, cy, r*2 + r*0.16, r*2 + r*0.16);
-
-  drawingContext.save();
-  drawingContext.beginPath();
-  drawingContext.arc(cx, cy, r, 0, Math.PI * 2);
-  drawingContext.clip();
-
-  // Fondo del campo visual (degradado radial, centro más claro)
-  let bR = TH.bg[0], bG = TH.bg[1], bB = TH.bg[2];
-  let bgGrad = drawingContext.createRadialGradient(cx - r*0.18, cy - r*0.18, 0, cx, cy, r);
-  bgGrad.addColorStop(0, `rgba(${min(255,bR+12)},${min(255,bG+12)},${min(255,bB+14)},1)`);
-  bgGrad.addColorStop(1, `rgba(${max(0,bR-8)},${max(0,bG-8)},${max(0,bB-8)},1)`);
-  drawingContext.fillStyle = bgGrad;
-  drawingContext.fillRect(cx - r, cy - r, r*2, r*2);
-
-  // Partículas con aspecto esférico
-  noStroke();
-  for (let p of microPts) {
-    let pr = p.r, px = cx+p.x, py = cy+p.y;
-    fill(...p.col, 238);
-    ellipse(px, py, pr*2, pr*2);
-    fill(max(0,p.col[0]-55), max(0,p.col[1]-55), max(0,p.col[2]-55), 60);
-    ellipse(px + pr*0.26, py + pr*0.28, pr*1.25, pr*1.25);
-    fill(255, 255, 255, 72);
-    ellipse(px - pr*0.30, py - pr*0.32, pr*0.72, pr*0.72);
-    fill(255, 255, 255, 130);
-    ellipse(px - pr*0.38, py - pr*0.38, pr*0.28, pr*0.28);
-  }
-
-  // Viñeta (borde oscuro interior → sensación de profundidad óptica)
-  let vigGrad = drawingContext.createRadialGradient(cx, cy, r * 0.60, cx, cy, r);
-  vigGrad.addColorStop(0, 'rgba(0,0,0,0.00)');
-  vigGrad.addColorStop(1, 'rgba(0,0,0,0.32)');
-  drawingContext.fillStyle = vigGrad;
-  drawingContext.fillRect(cx - r, cy - r, r*2, r*2);
-
-  drawingContext.restore();
-
-  // Anillo interior del cristal
-  noFill();
-  stroke(...TH.accent, 185);
-  strokeWeight(1.6);
-  ellipse(cx, cy, r*2, r*2);
-
-  // Reflejo principal de la lente
-  stroke(255, 255, 255, 38);
-  strokeWeight(max(1, r * 0.045));
-  arc(cx - r*0.22, cy - r*0.27, r*0.82, r*0.46, -PI*0.76, -PI*0.04);
-
-  // Segundo reflejo (destello pequeño)
-  stroke(255, 255, 255, 20);
-  strokeWeight(max(0.8, r * 0.025));
-  arc(cx - r*0.08, cy - r*0.40, r*0.32, r*0.18, -PI*0.70, -PI*0.10);
-
-  noStroke();
-
-  if (caption) {
-    fill(...TH.muted);
-    textAlign(CENTER, TOP);
-    textSize(10);
-    text(caption, cx, cy + r + 8);
-    textAlign(LEFT, BASELINE);
-  }
-}
-
-// ============================================================
-//  Dibujo: contador de partículas (leyenda micro)
-// ============================================================
-function drawParticleCount(cx, cy, n, rho) {
-  fill(...TH.panel, 220);
-  stroke(...TH.border);
-  strokeWeight(1);
-  let pw = 155, ph = 28;
-  rect(cx - pw/2, cy - ph/2, pw, ph, 6);
-  noStroke();
-  fill(...TH.accent);
-  textSize(11);
-  textAlign(CENTER, CENTER);
-  text(i18n.t('≈ {n} partículas por lupa', { n: n }), cx, cy);
-  textAlign(LEFT, BASELINE);
-}
-
-// ============================================================
 //  Dibujo: display densidad (panel derecho modo single)
 // ============================================================
 function drawDensityDisplay(rho, matCol, cx, cy) {
@@ -818,44 +563,6 @@ function drawDensityBar(x, y, w, h, markers) {
 }
 
 // ============================================================
-//  Dibujo: indicador de ampliación (círculo en bloque + líneas a lupa)
-// ============================================================
-function drawZoomIndicator(scx, scy, lcx, lcy, lr) {
-  let sr = 14;
-
-  // Vector perpendicular al eje bloque→lupa
-  let dx = lcx - scx, dy = lcy - scy;
-  let dist = sqrt(dx * dx + dy * dy);
-  if (dist < 1) return;
-  let px = -dy / dist, py = dx / dist;
-
-  // ── Líneas divergentes primero (quedan debajo del círculo) ──
-  stroke(...TH.accent, 170);
-  strokeWeight(1.3);
-  lineDash([6, 5]);
-  line(scx + px * sr, scy + py * sr, lcx + px * lr, lcy + py * lr);
-  line(scx - px * sr, scy - py * sr, lcx - px * lr, lcy - py * lr);
-  lineDash([]);
-  noStroke();
-
-  // ── Pequeño círculo sobre el bloque ──
-  // Sombra oscura para contraste sobre cualquier color de material
-  noFill();
-  stroke(0, 0, 0, 110);
-  strokeWeight(4);
-  ellipse(scx, scy, sr * 2, sr * 2);
-  // Relleno muy tenue
-  fill(255, 255, 255, 30);
-  stroke(255, 255, 255, 225);
-  strokeWeight(1.8);
-  ellipse(scx, scy, sr * 2, sr * 2);
-  // Punto central
-  noStroke();
-  fill(255, 255, 255, 210);
-  ellipse(scx, scy, 4, 4);
-}
-
-// ============================================================
 //  Dibujo: corchetes dimensión (single mode)
 // ============================================================
 function drawBracket(cx, cy, bw, bh) {
@@ -912,13 +619,6 @@ function seededRand(seed) {
 // ============================================================
 //  MODO: Un objeto
 // ============================================================
-// Qué se ve en la lupa, en una línea
-function microCaption(mat, rho) {
-  if (mat.cat !== 'custom') return i18n.t(mat.micro);
-  return rho < 1 ? i18n.t('Material inventado: con huecos de aire')
-                 : i18n.t('Material inventado: partículas más pesadas cuanto más denso');
-}
-
 function drawSingleMode() {
   let s = getSingle();
   let { bw, bh } = boxSize(s.vol);
@@ -955,26 +655,11 @@ function drawSingleMode() {
   // Densidad grande
   drawDensityDisplay(s.rho, s.mat.col, rx, 108);
 
-  // Vista microscópica
-  if (showMicro) {
-    let mcy = 290;
-
-    // Indicador de ampliación: círculo en esquina inferior-derecha del bloque
-    let izx = bx + bw/2 - 22, izy = by + bh/2 - 22;
-    drawZoomIndicator(izx, izy, rx, mcy, 88);
-
-    animateMicro(microSingle, 88, s.mat.cat);
-    drawMicroLens(rx, mcy, 88, microSingle, microCaption(s.mat, s.rho));
-
-    // Etiqueta explicativa (debajo de la leyenda de la lupa)
-    fill(...TH.muted);
-    textSize(9.5);
-    textAlign(CENTER, TOP);
-    text(i18n.t('Más densidad: partículas más pesadas o más juntas'), rx, 402);
-  }
+  // Masa de cada cm³ (la densidad, vista como masa de un cubito de 1 cm³)
+  drawUnitCube(s.mat, s.rho, rx, 252);
 
   // Fórmula
-  drawFormulaCanvas(s.mass, s.vol, s.rho, rx, showMicro ? 448 : 340);
+  drawFormulaCanvas(s.mass, s.vol, s.rho, rx, 372);
 
   textAlign(LEFT, BASELINE);
 
@@ -982,56 +667,117 @@ function drawSingleMode() {
   drawDensityBar(28, height-28, width-56, 13, [{ rho: s.rho, col: s.mat.col }]);
 }
 
+// Cubito de 1 cm³ del material con su masa: la densidad leída como
+// «cuántos gramos tiene cada cm³».
+function drawUnitCube(mat, rho, cx, cy) {
+  let pw = 208, ph = 96;
+  fill(...TH.panel, 245);
+  stroke(...TH.border);
+  strokeWeight(1);
+  rect(cx - pw/2, cy - ph/2, pw, ph, 10);
+  noStroke();
+
+  // Cubo en perspectiva caballera
+  let s = 40, dx = 14, dy = -11;
+  let x = cx - pw/2 + 22, y = cy - s/2 + 4;
+  let c = mat.col;
+  fill(min(255, c[0] + 28), min(255, c[1] + 28), min(255, c[2] + 28));
+  quad(x, y, x + dx, y + dy, x + s + dx, y + dy, x + s, y);
+  fill(max(0, c[0] - 40), max(0, c[1] - 40), max(0, c[2] - 40));
+  quad(x + s, y, x + s + dx, y + dy, x + s + dx, y + s + dy, x + s, y + s);
+  fill(...c);
+  rect(x, y, s, s);
+  drawingContext.save();
+  drawingContext.beginPath();
+  drawingContext.rect(x, y, s, s);
+  drawingContext.clip();
+  drawMaterialTexture(mat, x, y, s, s);
+  drawingContext.restore();
+
+  fill(...TH.muted);
+  textSize(9.5);
+  textAlign(CENTER, TOP);
+  text('1 cm³', x + s/2 + dx/2, y + s + 6);
+
+  // Texto: masa de ese cm³
+  let tx = cx + 34;
+  textAlign(CENTER, TOP);
+  textSize(10);
+  text(i18n.t('MASA DE 1 cm³'), tx, cy - ph/2 + 16);
+  fill(...TH.text);
+  textSize(24);
+  textStyle(BOLD);
+  textAlign(CENTER, CENTER);
+  text(fmtGrams(rho), tx, cy + 6);
+  textStyle(NORMAL);
+  textAlign(LEFT, BASELINE);
+}
+
+function fmtGrams(m) {
+  if (m >= 1000) return i18n.num(m / 1000, 2) + ' kg';
+  if (m < 0.01)  return i18n.num(m, 4) + ' g';
+  return i18n.num(m, m < 10 ? 2 : 1) + ' g';
+}
+
 // ============================================================
-//  MODO: Comparar
+//  MODO: Comparar (balanza de brazos)
 // ============================================================
-function drawCompareMode() {
-  let a  = getObjA();
-  let b  = getObjB();
-  let sA, sB;
+// Balanza de dos platillos con los platillos encima del brazo (tipo Roberval):
+// los platillos quedan siempre horizontales y el brazo se inclina hacia el lado
+// con más masa. El recipiente del líquido se considera tarado (sin masa).
+const BAL = { cx: 380, py: 382, arm: 215, maxAng: 0.19, post: 30 };
+let beamAng = 0;   // ángulo actual del brazo (rad); > 0: baja el platillo B
+
+// Ángulo de equilibrio: crece con la diferencia relativa de masas y se satura
+// (como el fiel de una balanza real, que llega al tope con diferencias grandes).
+function balanceTarget(mA, mB) {
+  let rel = (mB - mA) / ((mA + mB) / 2);
+  if (abs(rel) < 0.005) return 0;
+  return BAL.maxAng * Math.tanh(rel * 6);
+}
+
+// Tamaño de los bloques sobre los platillos (más pequeños que en «Un objeto»)
+function compareSizes(a, b) {
   if (cmpSub === 'samevol') {
     let sv = boxSize(sharedVal);
-    sA = sv; sB = sv;
-  } else {
-    let pair = boxSizePair(a.vol, b.vol);
-    sA = pair.sA; sB = pair.sB;
+    let k = 0.5;
+    let sz = { bw: sv.bw * k, bh: sv.bh * k };
+    return { sA: sz, sB: sz };
   }
+  let pair = boxSizePair(a.vol, b.vol);
+  let k = 0.72;
+  return {
+    sA: { bw: pair.sA.bw * k, bh: pair.sA.bh * k },
+    sB: { bw: pair.sB.bw * k, bh: pair.sB.bh * k }
+  };
+}
 
-  let acx = width*0.255, acy = height*0.480;
-  let bcx = width*0.745, bcy = height*0.480;
+function drawCompareMode() {
+  let a = getObjA();
+  let b = getObjB();
+  let { sA, sB } = compareSizes(a, b);
 
   // Banner superior
   drawBanner();
 
-  // ── Cajas ──
-  drawBox2D(acx, acy, sA.bw, sA.bh, a.mat);
-  drawBox2D(bcx, bcy, sB.bw, sB.bh, b.mat);
+  // ── Datos de cada objeto (arriba, fijos) ──
+  let ax = BAL.cx - BAL.arm, bxx = BAL.cx + BAL.arm;
+  drawObjInfo(a, ax, 36, COL_A, 'A');
+  drawObjInfo(b, bxx, 36, COL_B, 'B');
 
-  // ── Lupa encima de cada caja ──
-  if (showMicro) {
-    animateMicro(microA, 44, a.mat.cat);
-    animateMicro(microB, 44, b.mat.cat);
-    drawMicroLens(acx, acy - sA.bh/2 + 52, 44, microA, '');
-    drawMicroLens(bcx, bcy - sB.bh/2 + 52, 44, microB, '');
-  }
+  // ── Brazo: se acerca suavemente al ángulo de equilibrio ──
+  let target = balanceTarget(a.mass, b.mass);
+  beamAng += (target - beamAng) * 0.08;
+  if (abs(target - beamAng) < 0.0005) beamAng = target;
 
-  // ── Etiqueta letra A / B ──
-  drawLetterBadge('A', acx - sA.bw/2 - 22, acy, COL_A);
-  drawLetterBadge('B', bcx + sB.bw/2 + 22, bcy, COL_B);
+  drawBalance(a, b, sA, sB, beamAng);
 
-  // ── Info bajo cada caja ──
-  drawObjInfo(a, acx, acy + sA.bh/2, COL_A);
-  drawObjInfo(b, bcx, bcy + sB.bh/2, COL_B);
-
-  // ── Indicador visual mismo volumen / misma masa ──
+  // Rótulo de lo que se mantiene igual
   if (cmpSub === 'samevol') {
-    drawSameVolLines(acx, bcx, acy, sA.bw, sA.bh);
+    drawSharedBadge(i18n.t('Mismo volumen: {v}', { v: sharedVal + ' cm³' }), TH.accent);
   } else {
-    drawSameMassBadge(a.mass);
+    drawSharedBadge(i18n.t('Misma masa: {m}', { m: fmtGrams(a.mass) }), TH.warning);
   }
-
-  // ── VS ──
-  drawVS(width/2, (acy + bcy)/2);
 
   // Barra densidades
   drawDensityBar(28, height-28, width-56, 13, [
@@ -1040,10 +786,94 @@ function drawCompareMode() {
   ]);
 }
 
+function drawBalance(a, b, sA, sB, ang) {
+  let cx = BAL.cx, py = BAL.py, L = BAL.arm;
+  let ex = cos(ang) * L, ey = sin(ang) * L;
+  let lx = cx - ex, ly = py - ey;    // extremo A (izquierda)
+  let rx = cx + ex, ry = py + ey;    // extremo B (derecha)
+  let metal = TH.muted;
+
+  // Base y columna
+  noStroke();
+  fill(...metal);
+  rect(cx - 70, 452, 140, 10, 4);
+  quad(cx - 34, 452, cx + 34, 452, cx + 12, py + 6, cx - 12, py + 6);
+
+  // Escala del fiel (arco con la marca de equilibrio)
+  noFill();
+  stroke(...TH.muted, 160);
+  strokeWeight(1.2);
+  arc(cx, py, 150, 150, -HALF_PI - 0.5, -HALF_PI + 0.5);
+  stroke(...TH.accent, 220);
+  strokeWeight(2);
+  line(cx, py - 75, cx, py - 83);
+  stroke(...TH.muted, 160);
+  strokeWeight(1);
+  for (let k of [-0.4, -0.2, 0.2, 0.4]) {
+    line(cx + sin(k) * 75, py - cos(k) * 75, cx + sin(k) * 80, py - cos(k) * 80);
+  }
+
+  // Fiel (aguja solidaria con el brazo, apunta hacia arriba)
+  stroke(...TH.accent);
+  strokeWeight(2);
+  line(cx, py, cx + sin(ang) * 70, py - cos(ang) * 70);
+
+  // Brazo
+  stroke(...metal);
+  strokeWeight(7);
+  strokeCap(ROUND);
+  line(lx, ly, rx, ry);
+  strokeCap(SQUARE);
+
+  // Pivote
+  noStroke();
+  fill(...TH.accent);
+  ellipse(cx, py, 12, 12);
+  fill(...TH.bg);
+  ellipse(cx, py, 4, 4);
+
+  // Platillos (siempre horizontales) sobre una varilla vertical
+  drawPan(lx, ly, sA, a.mat, COL_A);
+  drawPan(rx, ry, sB, b.mat, COL_B);
+}
+
+function drawPan(x, y, sz, mat, col) {
+  let metal = TH.muted;
+  let top = y - BAL.post;
+  let pw = max(120, sz.bw + 26);
+
+  stroke(...metal);
+  strokeWeight(4);
+  line(x, y, x, top);
+  noStroke();
+  fill(...metal);
+  rect(x - pw/2, top - 6, pw, 6, 3);
+  fill(...col, 230);
+  rect(x - pw/2, top - 6, 5, 6, 2);
+
+  // Objeto apoyado en el platillo
+  let by = top - 6 - sz.bh / 2;
+  if (mat.cat === 'liquid') drawLiquidInGlass(x, by, sz.bw, sz.bh, mat);
+  else                      drawBox2D(x, by, sz.bw, sz.bh, mat);
+}
+
+// Líquido dentro de un vaso de paredes finas (abierto por arriba)
+function drawLiquidInGlass(cx, cy, bw, bh, mat) {
+  drawBox2D(cx, cy, bw, bh, mat);
+  let x = cx - bw/2 - 3, y = cy - bh/2 - 10, w = bw + 6, h = bh + 13;
+  noFill();
+  stroke(225, 235, 245, 170);
+  strokeWeight(2);
+  line(x, y, x, y + h);
+  line(x + w, y, x + w, y + h);
+  line(x, y + h, x + w, y + h);
+  noStroke();
+}
+
 function drawBanner() {
   let txt = cmpSub === 'samevol'
-    ? i18n.t('MISMO VOLUMEN — ¿Cuál pesa más? Mira en la lupa cómo son sus partículas')
-    : i18n.t('MISMA MASA — ¿Por qué una ocupa más volumen que la otra?');
+    ? i18n.t('MISMO VOLUMEN — ¿Hacia qué lado se inclina la balanza?')
+    : i18n.t('MISMA MASA — La balanza está equilibrada. ¿Por qué no ocupan lo mismo?');
   let pw = 490, ph = 28;
   fill(...TH.panel, 235);
   stroke(...TH.border);
@@ -1059,74 +889,32 @@ function drawBanner() {
   textAlign(LEFT, BASELINE);
 }
 
-function drawLetterBadge(letter, cx, cy, col) {
-  fill(...col, 200);
-  textSize(22);
-  textStyle(BOLD);
-  textAlign(CENTER, CENTER);
-  text(letter, cx, cy);
-  textStyle(NORMAL);
-  textAlign(LEFT, BASELINE);
-}
-
-function drawObjInfo(obj, cx, bottomY, col) {
-  // Nombre y densidad
+function drawObjInfo(obj, cx, topY, col, letter) {
+  // Letra, nombre y densidad
   fill(...col);
   textSize(12.5);
   textStyle(BOLD);
   textAlign(CENTER, TOP);
-  text(i18n.t(obj.mat.name), cx, bottomY + 14);
+  text(letter + ' · ' + i18n.t(obj.mat.name), cx, topY + 14);
   textStyle(NORMAL);
 
   fill(...TH.muted);
   textSize(10);
-  text('ρ = ' + i18n.num(obj.rho, 2) + ' g/cm³', cx, bottomY + 30);
+  text('ρ = ' + i18n.num(obj.rho, 2) + ' g/cm³', cx, topY + 30);
 
   // Masa y volumen
-  let ms = obj.mass >= 1000 ? i18n.num(obj.mass/1000, 2)+' kg' : i18n.num(obj.mass, 1)+' g';
   let vs = obj.vol.toFixed(0)+' cm³';
-  text('m = ' + ms + '   V = ' + vs, cx, bottomY + 44);
+  text('m = ' + fmtGrams(obj.mass) + '   V = ' + vs, cx, topY + 44);
 
   textAlign(LEFT, BASELINE);
 }
 
-function drawSameVolLines(acx, bcx, cy, bw, bh) {
-  stroke(...TH.accent, 70);
-  strokeWeight(1);
-  lineDash([6, 5]);
-  line(acx - bw/2 - 4, cy - bh/2, bcx + bw/2 + 4, cy - bh/2);
-  line(acx - bw/2 - 4, cy + bh/2, bcx + bw/2 + 4, cy + bh/2);
-  lineDash([]);
-  noStroke();
-  fill(...TH.accent, 140);
-  textSize(9);
-  textAlign(CENTER, BOTTOM);
-  text(i18n.t('← mismo volumen →'), width/2, cy - bh/2 - 5);
-  textAlign(LEFT, BASELINE);
-}
-
-function drawSameMassBadge(mass) {
-  let ms = mass >= 1000 ? i18n.num(mass/1000, 2)+' kg' : i18n.num(mass, 1)+' g';
-  fill(...TH.warning, 210);
+function drawSharedBadge(label, col) {
+  fill(...col, 220);
   textSize(10.5);
   textStyle(BOLD);
   textAlign(CENTER, TOP);
-  text(i18n.t('Misma masa: {m}', { m: ms }), width/2, height/2 + 15);
-  textStyle(NORMAL);
-  textAlign(LEFT, BASELINE);
-}
-
-function drawVS(cx, cy) {
-  fill(...TH.panel, 215);
-  stroke(...TH.border);
-  strokeWeight(1.2);
-  ellipse(cx, cy, 50, 50);
-  noStroke();
-  fill(...TH.muted);
-  textSize(12);
-  textStyle(BOLD);
-  textAlign(CENTER, CENTER);
-  text('VS', cx, cy);
+  text(label, width/2, 64);
   textStyle(NORMAL);
   textAlign(LEFT, BASELINE);
 }
@@ -1173,14 +961,12 @@ function setupDomListeners() {
     cmpSub = 'samevol';
     setActive('sub-samevol', ['sub-samevol', 'sub-samemass']);
     resetShared(200, 10, 1000);
-    needRebuild = true;
     updatePanel();
   });
   document.getElementById('sub-samemass').addEventListener('click', () => {
     cmpSub = 'samemass';
     setActive('sub-samemass', ['sub-samevol', 'sub-samemass']);
     resetShared(200, 10, 1000);
-    needRebuild = true;
     updatePanel();
   });
 
@@ -1190,26 +976,19 @@ function setupDomListeners() {
     let custom = MATS[singleMatIdx].cat === 'custom';
     document.getElementById('preset-vol-row').style.display = custom ? 'none' : '';
     document.getElementById('custom-rows').style.display    = custom ? '' : 'none';
-    needRebuild = true;
     updatePanel();
   });
   slider('sl-preset-vol', v => { singleVol = v; });
   slider('sl-mass',       v => { customMass = v; });
   slider('sl-vol',        v => { customVol = v; });
 
-  document.getElementById('toggle-micro').addEventListener('change', function() {
-    showMicro = this.checked;
-  });
-
   // ── Compare ──
   document.getElementById('sel-mat-a').addEventListener('change', function() {
     matAIdx = parseInt(this.value);
-    needRebuild = true;
     updatePanel();
   });
   document.getElementById('sel-mat-b').addEventListener('change', function() {
     matBIdx = parseInt(this.value);
-    needRebuild = true;
     updatePanel();
   });
   slider('sl-shared', v => { sharedVal = v; });
@@ -1256,7 +1035,6 @@ function slider(id, cb) {
   if (!el) return;
   el.addEventListener('input', function() {
     cb(parseInt(this.value));
-    needRebuild = true;
     updatePanel();
   });
 }
@@ -1283,7 +1061,6 @@ function syncFromDom() {
   singleVol    = parseInt(document.getElementById('sl-preset-vol').value || '200');
   customMass   = parseInt(document.getElementById('sl-mass').value || '200');
   customVol    = parseInt(document.getElementById('sl-vol').value || '200');
-  showMicro    = document.getElementById('toggle-micro').checked;
   matAIdx      = parseInt(document.getElementById('sel-mat-a').value || '1');
   matBIdx      = parseInt(document.getElementById('sel-mat-b').value || '6');
   sharedVal    = parseInt(document.getElementById('sl-shared').value || '200');
@@ -1371,13 +1148,13 @@ function updateCompareResult(rA, rB) {
   let diff = Math.abs(rA - rB);
   if (diff < 0.02) {
     el.className = 'compare-result same';
-    el.innerHTML = i18n.t('Misma densidad: {r} g/cm³.<br>Igual compactación de materia.', { r: i18n.num(rA, 2) });
+    el.innerHTML = i18n.t('Misma densidad: {r} g/cm³.<br>Cada cm³ de A y de B tiene la misma masa.', { r: i18n.num(rA, 2) });
   } else if (rA > rB) {
     el.className = 'compare-result a-denser';
-    el.innerHTML = i18n.t('<strong>A es más denso</strong> ({a} vs {b} g/cm³).<br>A tiene más materia por cm³.', { a: i18n.num(rA, 2), b: i18n.num(rB, 2) });
+    el.innerHTML = i18n.t('<strong>A es más denso</strong> ({a} vs {b} g/cm³).<br>Cada cm³ de A tiene más masa que uno de B.', { a: i18n.num(rA, 2), b: i18n.num(rB, 2) });
   } else {
     el.className = 'compare-result b-denser';
-    el.innerHTML = i18n.t('<strong>B es más denso</strong> ({b} vs {a} g/cm³).<br>B tiene más materia por cm³.', { a: i18n.num(rA, 2), b: i18n.num(rB, 2) });
+    el.innerHTML = i18n.t('<strong>B es más denso</strong> ({b} vs {a} g/cm³).<br>Cada cm³ de B tiene más masa que uno de A.', { a: i18n.num(rA, 2), b: i18n.num(rB, 2) });
   }
 }
 
