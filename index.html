@@ -887,6 +887,15 @@
           </div>
           <input type="range" id="sl-preset-vol" min="10" max="1000" value="200">
           <div class="slider-bounds"><span>10 cm³</span><span>1000 cm³</span></div>
+          <!-- Masa de la muestra: va ligada al volumen (m = ρ · V con ρ fija) -->
+          <div style="margin-top:11px">
+            <div class="ctrl-row">
+              <label class="ctrl-label" for="sl-preset-mass">Masa de la muestra</label>
+              <span class="value-badge" id="val-preset-mass">200 g</span>
+            </div>
+            <input type="range" id="sl-preset-mass" min="10" max="1000" step="1" value="200">
+            <div class="slider-bounds"><span id="preset-mass-min">10 g</span><span id="preset-mass-max">1000 g</span></div>
+          </div>
         </div>
 
         <!-- Sliders personalizados -->

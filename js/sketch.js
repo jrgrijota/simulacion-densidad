@@ -979,6 +979,14 @@ function setupDomListeners() {
     updatePanel();
   });
   slider('sl-preset-vol', v => { singleVol = v; });
+  // Masa de un material real: al moverla cambia el volumen, porque ρ no cambia.
+  // El paso del deslizador es ρ, así que el volumen siempre sale entero.
+  document.getElementById('sl-preset-mass').addEventListener('input', function() {
+    let rho = MATS[singleMatIdx].rho || 1;
+    singleVol = constrain(round(parseFloat(this.value) / rho), 10, 1000);
+    document.getElementById('sl-preset-vol').value = singleVol;
+    updatePanel();
+  });
   slider('sl-mass',       v => { customMass = v; });
   slider('sl-vol',        v => { customVol = v; });
 
@@ -1075,6 +1083,7 @@ function updatePanel() {
 
   // Fills de sliders
   setFill('sl-preset-vol', 10, 1000, singleVol);
+  syncPresetMass();
   setFill('sl-mass',       1,  2000, customMass);
   setFill('sl-vol',        1,  2000, customVol);
   setFill('sl-shared',     10, 1000, sharedVal);
@@ -1120,6 +1129,21 @@ function updatePanel() {
   setText('vol-b',  fmtVal(b.vol));
 
   updateCompareResult(a.rho, b.rho);
+}
+
+// Deslizador de masa de los materiales reales: rango ρ·10 … ρ·1000 g (el mismo
+// que el de volumen) y valor m = ρ · V.
+function syncPresetMass() {
+  let el = document.getElementById('sl-preset-mass');
+  if (!el) return;
+  let rho = MATS[singleMatIdx].rho || 1;
+  let lo = rho * 10, hi = rho * 1000, m = rho * singleVol;
+  el.min = lo; el.max = hi; el.step = rho;
+  el.value = m;
+  setFill('sl-preset-mass', lo, hi, m);
+  setText('val-preset-mass', fmtGrams(m));
+  setText('preset-mass-min', fmtGrams(lo));
+  setText('preset-mass-max', fmtGrams(hi));
 }
 
 function updateFloatBadge(rho, esAgua) {
