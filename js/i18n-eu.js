@@ -101,5 +101,7 @@ window.I18N_EU = {
   'MISMO VOLUMEN — ¿Cuál pesa más? Mira en la lupa cómo son sus partículas': 'BOLUMEN BERA — Zeinek pisatzen du gehiago? Begiratu lupan nolakoak diren haien partikulak',
   'MISMA MASA — ¿Por qué una ocupa más volumen que la otra?': 'MASA BERA — Zergatik hartzen du batek besteak baino bolumen handiagoa?',
   '← mismo volumen →': '← bolumen bera →',
-  'Misma masa: {m}': 'Masa bera: {m}'
+  'Misma masa: {m}': 'Masa bera: {m}',
+  // Sello de la zona de simulación (js/sello.js)
+  'Más simulaciones en simulaciencia.es': 'Simulazio gehiago simulaciencia.es webgunean'
 };
