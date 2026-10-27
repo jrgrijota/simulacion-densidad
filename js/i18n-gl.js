@@ -5,8 +5,8 @@ window.I18N_GL = {
   'Densidad': 'Densidade',
   'ρ = masa / volumen': 'ρ = masa / volume',
   '¿Qué es la densidad?': 'Que é a densidade?',
-  'intro-densidad': 'A <strong>densidade</strong> dinos canta materia hai comprimida en cada unidade de volume. Dous obxectos do mesmo tamaño poden ter masas moi diferentes.',
-  'intro-masa': 'A <strong>masa</strong> é a cantidade de materia: cantos átomos hai e canto pesan. A vista microscópica amósao directamente.',
+  'intro-densidad-masa': 'A <strong>densidade</strong> dinos canta masa hai en cada unidade de volume. Dous obxectos do mesmo tamaño poden ter masas moi distintas.',
+  'intro-masa-balanza': 'A <strong>masa</strong> é a cantidade de materia. Mídese cunha balanza: no modo «Comparar» vese cara a que lado se inclina.',
 
   // Modos
   'Modo de exploración': 'Modo de exploración',
@@ -18,11 +18,11 @@ window.I18N_GL = {
   // Panel «Un objeto»
   'Material': 'Material',
   'Volumen de la muestra': 'Volume da mostra',
+  'Masa de la muestra': 'Masa da mostra',
   'Masa': 'Masa',
   'Volumen': 'Volume',
   'Cálculo': 'Cálculo',
   'ρ < 1 g/cm³ → flota en agua ↑': 'ρ < 1 g/cm³ → flota na auga ↑',
-  'Vista microscópica activa': 'Vista microscópica activa',
 
   // Indicador de flotabilidad
   'ρ = {r} g/cm³: <strong>es la referencia</strong> para saber si algo flota': 'ρ = {r} g/cm³: <strong>é a referencia</strong> para saber se algo flota',
@@ -44,15 +44,15 @@ window.I18N_GL = {
   'Objeto A': 'Obxecto A',
   'Objeto B': 'Obxecto B',
   'Selecciona dos materiales para comparar.': 'Selecciona dous materiais para comparar.',
-  'Misma densidad: {r} g/cm³.<br>Igual compactación de materia.': 'Mesma densidade: {r} g/cm³.<br>A materia está igual de compacta.',
-  '<strong>A es más denso</strong> ({a} vs {b} g/cm³).<br>A tiene más materia por cm³.': '<strong>A é máis denso</strong> ({a} vs {b} g/cm³).<br>A ten máis materia por cm³.',
-  '<strong>B es más denso</strong> ({b} vs {a} g/cm³).<br>B tiene más materia por cm³.': '<strong>B é máis denso</strong> ({b} vs {a} g/cm³).<br>B ten máis materia por cm³.',
+  'Misma densidad: {r} g/cm³.<br>Cada cm³ de A y de B tiene la misma masa.': 'Mesma densidade: {r} g/cm³.<br>Cada cm³ de A e de B ten a mesma masa.',
+  '<strong>A es más denso</strong> ({a} vs {b} g/cm³).<br>Cada cm³ de A tiene más masa que uno de B.': '<strong>A é máis denso</strong> ({a} vs {b} g/cm³).<br>Cada cm³ de A ten máis masa ca un de B.',
+  '<strong>B es más denso</strong> ({b} vs {a} g/cm³).<br>Cada cm³ de B tiene más masa que uno de A.': '<strong>B é máis denso</strong> ({b} vs {a} g/cm³).<br>Cada cm³ de B ten máis masa ca un de A.',
 
   // Conceptos clave
   'Conceptos clave': 'Conceptos clave',
-  'concepto-masa': '<strong>Masa:</strong> cantidade de materia (átomos). Non depende da gravidade.',
+  'concepto-masa-macro': '<strong>Masa:</strong> cantidade de materia. Non depende da gravidade.',
   'concepto-densidad': '<strong>Densidade:</strong> propiedade intensiva — non cambia ao cortar o obxecto.',
-  'concepto-micro': '<strong>Micro-macro:</strong> a densidade depende de canto pesa cada partícula e de canto de xuntas están (e de se hai ocos con aire, como na cortiza).',
+  'concepto-balanza': '<strong>Balanza:</strong> compara masas. Co mesmo volume inclínase cara ao material máis denso; coa mesma masa queda equilibrada.',
   'concepto-unidades': '<strong>Unidades:</strong> 1 g/cm³ = 1 g/mL = 1000 kg/m³',
   'ρ = 1 g/cm³ → equilibrio en agua ⇌': 'ρ = 1 g/cm³ → equilibrio na auga ⇌',
   'ρ > 1 g/cm³ → se hunde en agua ↓': 'ρ > 1 g/cm³ → afúndese na auga ↓',
@@ -76,31 +76,18 @@ window.I18N_GL = {
   'Plomo': 'Chumbo',
   'Personalizado': 'Personalizado',
 
-  // Leyendas de la lupa
-  'Paredes de celulosa con celdas de aire': 'Paredes de celulosa con celas de aire',
-  'Fibras de celulosa con poros de aire': 'Fibras de celulosa con poros de aire',
-  'Moléculas de agua (18 u) en una red abierta': 'Moléculas de auga (18 u) nunha rede aberta',
-  'Moléculas de agua (18 u), juntas y en movimiento': 'Moléculas de auga (18 u), xuntas e en movemento',
-  'Eslabones de PET (192 u), juntos y desordenados': 'Unidades de PET (192 u), xuntas e desordenadas',
-  'Átomos de aluminio (27 u), muy juntos': 'Átomos de aluminio (27 u), moi xuntos',
-  'Átomos de hierro (56 u), muy juntos': 'Átomos de ferro (56 u), moi xuntos',
-  'Átomos de cobre (64 u), muy juntos': 'Átomos de cobre (64 u), moi xuntos',
-  'Átomos de plomo (207 u): muy pesados': 'Átomos de chumbo (207 u): moi pesados',
-  'Material inventado: con huecos de aire': 'Material inventado: con ocos de aire',
-  'Material inventado: partículas más pesadas cuanto más denso': 'Material inventado: canto máis denso, máis pesadas as partículas',
 
   // Lienzo
-  '≈ {n} partículas por lupa': '≈ {n} partículas por lupa',
   'DENSIDAD  (ρ)': 'DENSIDADE  (ρ)',
   'agua\n1,0': 'auga\n1,0',
   'flotan': 'flotan',
   'se hunden en agua →': 'afúndense na auga →',
   'tamaño no proporcional a V': 'tamaño non proporcional a V',
   'ANÁLISIS DEL MATERIAL': 'ANÁLISE DO MATERIAL',
-  'Más densidad: partículas más pesadas o más juntas': 'Máis densidade: partículas máis pesadas ou máis xuntas',
-  'MISMO VOLUMEN — ¿Cuál pesa más? Mira en la lupa cómo son sus partículas': 'MESMO VOLUME — Cal pesa máis? Mira na lupa como son as súas partículas',
-  'MISMA MASA — ¿Por qué una ocupa más volumen que la otra?': 'MESMA MASA — Por que un ocupa máis volume que o outro?',
-  '← mismo volumen →': '← mesmo volume →',
+  'MASA DE 1 cm³': 'MASA DE 1 cm³',
+  'MISMO VOLUMEN — ¿Hacia qué lado se inclina la balanza?': 'MESMO VOLUME — Cara a que lado se inclina a balanza?',
+  'MISMA MASA — La balanza está equilibrada. ¿Por qué no ocupan lo mismo?': 'MESMA MASA — A balanza está equilibrada. Por que non ocupan o mesmo?',
+  'Mismo volumen: {v}': 'Mesmo volume: {v}',
   'Misma masa: {m}': 'Mesma masa: {m}',
   // Sello de la zona de simulación (js/sello.js)
   'Más simulaciones en simulaciencia.es': 'Máis simulacións en simulaciencia.es'
