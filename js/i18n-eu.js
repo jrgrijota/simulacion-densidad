@@ -5,8 +5,8 @@ window.I18N_EU = {
   'Densidad': 'Dentsitatea',
   'ρ = masa / volumen': 'ρ = masa / bolumena',
   '¿Qué es la densidad?': 'Zer da dentsitatea?',
-  'intro-densidad': '<strong>Dentsitateak</strong> esaten digu zenbat materia dagoen pilatuta bolumen-unitate bakoitzean. Tamaina bereko bi objektuk masa oso desberdinak izan ditzakete.',
-  'intro-masa': '<strong>Masa</strong> materia kantitatea da: zenbat atomo dauden eta zein astunak diren. Ikuspegi mikroskopikoak zuzenean erakusten du hori.',
+  'intro-densidad-masa': '<strong>Dentsitateak</strong> bolumen-unitate bakoitzean zenbat masa dagoen adierazten digu. Tamaina bereko bi objektuk masa oso desberdinak izan ditzakete.',
+  'intro-masa-balanza': '<strong>Masa</strong> materia kantitatea da. Balantzaz neurtzen da: «Alderatu» moduan ikusten da zein aldetara makurtzen den.',
 
   // Modos
   'Modo de exploración': 'Esplorazio modua',
@@ -18,11 +18,11 @@ window.I18N_EU = {
   // Panel «Un objeto»
   'Material': 'Materiala',
   'Volumen de la muestra': 'Laginaren bolumena',
+  'Masa de la muestra': 'Laginaren masa',
   'Masa': 'Masa',
   'Volumen': 'Bolumena',
   'Cálculo': 'Kalkulua',
   'ρ < 1 g/cm³ → flota en agua ↑': 'ρ < 1 g/cm³ → uretan flotatzen du ↑',
-  'Vista microscópica activa': 'Ikuspegi mikroskopikoa aktibo',
 
   // Indicador de flotabilidad
   'ρ = {r} g/cm³: <strong>es la referencia</strong> para saber si algo flota': 'ρ = {r} g/cm³: <strong>erreferentzia da</strong> zerbaitek flotatzen duen jakiteko',
@@ -44,15 +44,15 @@ window.I18N_EU = {
   'Objeto A': 'A objektua',
   'Objeto B': 'B objektua',
   'Selecciona dos materiales para comparar.': 'Hautatu bi material alderatzeko.',
-  'Misma densidad: {r} g/cm³.<br>Igual compactación de materia.': 'Dentsitate bera: {r} g/cm³.<br>Materia berdin pilatuta dago.',
-  '<strong>A es más denso</strong> ({a} vs {b} g/cm³).<br>A tiene más materia por cm³.': '<strong>A dentsoagoa da</strong> ({a} vs {b} g/cm³).<br>A-k materia gehiago du cm³ bakoitzeko.',
-  '<strong>B es más denso</strong> ({b} vs {a} g/cm³).<br>B tiene más materia por cm³.': '<strong>B dentsoagoa da</strong> ({b} vs {a} g/cm³).<br>B-k materia gehiago du cm³ bakoitzeko.',
+  'Misma densidad: {r} g/cm³.<br>Cada cm³ de A y de B tiene la misma masa.': 'Dentsitate bera: {r} g/cm³.<br>A-ren eta B-ren cm³ bakoitzak masa bera du.',
+  '<strong>A es más denso</strong> ({a} vs {b} g/cm³).<br>Cada cm³ de A tiene más masa que uno de B.': '<strong>A dentsoagoa da</strong> ({a} vs {b} g/cm³).<br>A-ren cm³ bakoitzak B-ren batek baino masa handiagoa du.',
+  '<strong>B es más denso</strong> ({b} vs {a} g/cm³).<br>Cada cm³ de B tiene más masa que uno de A.': '<strong>B dentsoagoa da</strong> ({b} vs {a} g/cm³).<br>B-ren cm³ bakoitzak A-ren batek baino masa handiagoa du.',
 
   // Conceptos clave
   'Conceptos clave': 'Kontzeptu nagusiak',
-  'concepto-masa': '<strong>Masa:</strong> materia kantitatea (atomoak). Ez dago grabitatearen menpe.',
+  'concepto-masa-macro': '<strong>Masa:</strong> materia kantitatea. Ez dago grabitatearen menpe.',
   'concepto-densidad': '<strong>Dentsitatea:</strong> propietate intentsiboa — ez da aldatzen objektua moztean.',
-  'concepto-micro': '<strong>Mikro-makro:</strong> dentsitatea partikula bakoitzak zenbat pisatzen duen eta partikulak zein elkarren ondoan dauden araberakoa da (baita aire-hutsunerik dagoen ere, kortxoan bezala).',
+  'concepto-balanza': '<strong>Balantza:</strong> masak alderatzen ditu. Bolumen berarekin material dentsoenaren aldera makurtzen da; masa berarekin orekan geratzen da.',
   'concepto-unidades': '<strong>Unitateak:</strong> 1 g/cm³ = 1 g/mL = 1000 kg/m³',
   'ρ = 1 g/cm³ → equilibrio en agua ⇌': 'ρ = 1 g/cm³ → uretan orekan ⇌',
   'ρ > 1 g/cm³ → se hunde en agua ↓': 'ρ > 1 g/cm³ → uretan hondoratzen da ↓',
@@ -76,31 +76,18 @@ window.I18N_EU = {
   'Plomo': 'Beruna',
   'Personalizado': 'Pertsonalizatua',
 
-  // Leyendas de la lupa
-  'Paredes de celulosa con celdas de aire': 'Zelulosazko hormak, aire-gelaxkekin',
-  'Fibras de celulosa con poros de aire': 'Zelulosazko zuntzak, aire-poroekin',
-  'Moléculas de agua (18 u) en una red abierta': 'Ur-molekulak (18 u) sare ireki batean',
-  'Moléculas de agua (18 u), juntas y en movimiento': 'Ur-molekulak (18 u), elkarren ondoan eta mugimenduan',
-  'Eslabones de PET (192 u), juntos y desordenados': 'PET kateko unitateak (192 u), elkarren ondoan eta desordenatuta',
-  'Átomos de aluminio (27 u), muy juntos': 'Aluminio-atomoak (27 u), oso elkarren ondoan',
-  'Átomos de hierro (56 u), muy juntos': 'Burdin-atomoak (56 u), oso elkarren ondoan',
-  'Átomos de cobre (64 u), muy juntos': 'Kobre-atomoak (64 u), oso elkarren ondoan',
-  'Átomos de plomo (207 u): muy pesados': 'Berun-atomoak (207 u): oso astunak',
-  'Material inventado: con huecos de aire': 'Asmatutako materiala: aire-hutsuneekin',
-  'Material inventado: partículas más pesadas cuanto más denso': 'Asmatutako materiala: zenbat eta dentsoago, orduan eta partikula astunagoak',
 
   // Lienzo
-  '≈ {n} partículas por lupa': '≈ {n} partikula lupako',
   'DENSIDAD  (ρ)': 'DENTSITATEA  (ρ)',
   'agua\n1,0': 'ura\n1,0',
   'flotan': 'flotatu',
   'se hunden en agua →': 'uretan hondoratzen dira →',
   'tamaño no proporcional a V': 'tamaina ez da V-ren proportzionala',
   'ANÁLISIS DEL MATERIAL': 'MATERIALAREN ANALISIA',
-  'Más densidad: partículas más pesadas o más juntas': 'Dentsitate handiagoa: partikula astunagoak edo elkarrengandik hurbilago',
-  'MISMO VOLUMEN — ¿Cuál pesa más? Mira en la lupa cómo son sus partículas': 'BOLUMEN BERA — Zeinek pisatzen du gehiago? Begiratu lupan nolakoak diren haien partikulak',
-  'MISMA MASA — ¿Por qué una ocupa más volumen que la otra?': 'MASA BERA — Zergatik hartzen du batek besteak baino bolumen handiagoa?',
-  '← mismo volumen →': '← bolumen bera →',
+  'MASA DE 1 cm³': '1 cm³-REN MASA',
+  'MISMO VOLUMEN — ¿Hacia qué lado se inclina la balanza?': 'BOLUMEN BERA — Zein aldetara makurtzen da balantza?',
+  'MISMA MASA — La balanza está equilibrada. ¿Por qué no ocupan lo mismo?': 'MASA BERA — Balantza orekan dago. Zergatik ez dute leku bera hartzen?',
+  'Mismo volumen: {v}': 'Bolumen bera: {v}',
   'Misma masa: {m}': 'Masa bera: {m}',
   // Sello de la zona de simulación (js/sello.js)
   'Más simulaciones en simulaciencia.es': 'Simulazio gehiago simulaciencia.es webgunean'
