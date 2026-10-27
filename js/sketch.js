@@ -928,6 +928,8 @@ function populateSelects() {
     let el = document.getElementById(id);
     if (!el) continue;
     MATS.forEach((m, i) => {
+      // «Personalizado» solo tiene deslizadores en «Un objeto»
+      if (id !== 'sel-material' && m.cat === 'custom') return;
       let opt = document.createElement('option');
       opt.value = i;
       opt.textContent = m.rho
