@@ -22,13 +22,13 @@ window.I18N_EU = {
   'Masa': 'Masa',
   'Volumen': 'Bolumena',
   'Cálculo': 'Kalkulua',
-  'ρ < 1 g/cm³ → flota en agua ↑': 'ρ < 1 g/cm³ → uretan flotatzen du ↑',
+  'ρ < 1 kg/L → flota en agua ↑': 'ρ < 1 kg/L → uretan flotatzen du ↑',
 
   // Indicador de flotabilidad
-  'ρ = {r} g/cm³: <strong>es la referencia</strong> para saber si algo flota': 'ρ = {r} g/cm³: <strong>erreferentzia da</strong> zerbaitek flotatzen duen jakiteko',
-  'ρ = {r} g/cm³ &lt; 1 → <strong>flota en agua</strong> ↑': 'ρ = {r} g/cm³ &lt; 1 → <strong>uretan flotatzen du</strong> ↑',
-  'ρ = {r} g/cm³ &gt; 1 → <strong>se hunde en agua</strong> ↓': 'ρ = {r} g/cm³ &gt; 1 → <strong>uretan hondoratzen da</strong> ↓',
-  'ρ = {r} g/cm³ ≈ 1 → <strong>equilibrio en agua</strong> ⇌': 'ρ = {r} g/cm³ ≈ 1 → <strong>uretan orekan</strong> ⇌',
+  'ρ = {r} kg/L: <strong>es la referencia</strong> para saber si algo flota': 'ρ = {r} kg/L: <strong>erreferentzia da</strong> zerbaitek flotatzen duen jakiteko',
+  'ρ = {r} kg/L &lt; 1 → <strong>flota en agua</strong> ↑': 'ρ = {r} kg/L &lt; 1 → <strong>uretan flotatzen du</strong> ↑',
+  'ρ = {r} kg/L &gt; 1 → <strong>se hunde en agua</strong> ↓': 'ρ = {r} kg/L &gt; 1 → <strong>uretan hondoratzen da</strong> ↓',
+  'ρ = {r} kg/L ≈ 1 → <strong>equilibrio en agua</strong> ⇌': 'ρ = {r} kg/L ≈ 1 → <strong>uretan orekan</strong> ⇌',
 
   // Panel «Comparar»
   '¿Qué se mantiene fijo?': 'Zer mantentzen da finko?',
@@ -44,18 +44,18 @@ window.I18N_EU = {
   'Objeto A': 'A objektua',
   'Objeto B': 'B objektua',
   'Selecciona dos materiales para comparar.': 'Hautatu bi material alderatzeko.',
-  'Misma densidad: {r} g/cm³.<br>Cada cm³ de A y de B tiene la misma masa.': 'Dentsitate bera: {r} g/cm³.<br>A-ren eta B-ren cm³ bakoitzak masa bera du.',
-  '<strong>A es más denso</strong> ({a} vs {b} g/cm³).<br>Cada cm³ de A tiene más masa que uno de B.': '<strong>A dentsoagoa da</strong> ({a} vs {b} g/cm³).<br>A-ren cm³ bakoitzak B-ren batek baino masa handiagoa du.',
-  '<strong>B es más denso</strong> ({b} vs {a} g/cm³).<br>Cada cm³ de B tiene más masa que uno de A.': '<strong>B dentsoagoa da</strong> ({b} vs {a} g/cm³).<br>B-ren cm³ bakoitzak A-ren batek baino masa handiagoa du.',
+  'Misma densidad: {r} kg/L.<br>Cada litro de A y de B tiene la misma masa.': 'Dentsitate bera: {r} kg/L.<br>A-ren eta B-ren litro bakoitzak masa bera du.',
+  '<strong>A es más denso</strong> ({a} vs {b} kg/L).<br>Cada litro de A tiene más masa que uno de B.': '<strong>A dentsoagoa da</strong> ({a} vs {b} kg/L).<br>A-ren litro bakoitzak B-ren batek baino masa handiagoa du.',
+  '<strong>B es más denso</strong> ({b} vs {a} kg/L).<br>Cada litro de B tiene más masa que uno de A.': '<strong>B dentsoagoa da</strong> ({b} vs {a} kg/L).<br>B-ren litro bakoitzak A-ren batek baino masa handiagoa du.',
 
   // Conceptos clave
   'Conceptos clave': 'Kontzeptu nagusiak',
   'concepto-masa-macro': '<strong>Masa:</strong> materia kantitatea. Ez dago grabitatearen menpe.',
   'concepto-densidad': '<strong>Dentsitatea:</strong> propietate intentsiboa — ez da aldatzen objektua moztean.',
   'concepto-balanza': '<strong>Balantza:</strong> masak alderatzen ditu. Bolumen berarekin material dentsoenaren aldera makurtzen da; masa berarekin orekan geratzen da.',
-  'concepto-unidades': '<strong>Unitateak:</strong> 1 g/cm³ = 1 g/mL = 1000 kg/m³',
-  'ρ = 1 g/cm³ → equilibrio en agua ⇌': 'ρ = 1 g/cm³ → uretan orekan ⇌',
-  'ρ > 1 g/cm³ → se hunde en agua ↓': 'ρ > 1 g/cm³ → uretan hondoratzen da ↓',
+  'concepto-unidades': '<strong>Unitateak:</strong> 1 L = 1 dm³ = 1000 cm³; 1 kg/L = 1 g/cm³ = 1000 kg/m³',
+  'ρ = 1 kg/L → equilibrio en agua ⇌': 'ρ = 1 kg/L → uretan orekan ⇌',
+  'ρ > 1 kg/L → se hunde en agua ↓': 'ρ > 1 kg/L → uretan hondoratzen da ↓',
 
   // Tema
   'Cambiar tema': 'Aldatu gaia',
@@ -84,11 +84,16 @@ window.I18N_EU = {
   'se hunden en agua →': 'uretan hondoratzen dira →',
   'tamaño no proporcional a V': 'tamaina ez da V-ren proportzionala',
   'ANÁLISIS DEL MATERIAL': 'MATERIALAREN ANALISIA',
-  'MASA DE 1 cm³': '1 cm³-REN MASA',
+  'MASA DE 1 L': '1 L-REN MASA',
   'MISMO VOLUMEN — ¿Hacia qué lado se inclina la balanza?': 'BOLUMEN BERA — Zein aldetara makurtzen da balantza?',
   'MISMA MASA — La balanza está equilibrada. ¿Por qué no ocupan lo mismo?': 'MASA BERA — Balantza orekan dago. Zergatik ez dute leku bera hartzen?',
   'Mismo volumen: {v}': 'Bolumen bera: {v}',
   'Misma masa: {m}': 'Masa bera: {m}',
+  // Valor de los deslizadores para el lector de pantalla
+  '1 litro': '1 litro',
+  '1 kilogramo': '1 kilogramo',
+  '{v} litros': '{v} litro',
+  '{m} kilogramos': '{m} kilogramo',
   // Sello de la zona de simulación (js/sello.js)
   'Más simulaciones en simulaciencia.es': 'Simulazio gehiago simulaciencia.es webgunean'
 };

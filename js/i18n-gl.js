@@ -22,13 +22,13 @@ window.I18N_GL = {
   'Masa': 'Masa',
   'Volumen': 'Volume',
   'Cálculo': 'Cálculo',
-  'ρ < 1 g/cm³ → flota en agua ↑': 'ρ < 1 g/cm³ → flota na auga ↑',
+  'ρ < 1 kg/L → flota en agua ↑': 'ρ < 1 kg/L → flota na auga ↑',
 
   // Indicador de flotabilidad
-  'ρ = {r} g/cm³: <strong>es la referencia</strong> para saber si algo flota': 'ρ = {r} g/cm³: <strong>é a referencia</strong> para saber se algo flota',
-  'ρ = {r} g/cm³ &lt; 1 → <strong>flota en agua</strong> ↑': 'ρ = {r} g/cm³ &lt; 1 → <strong>flota na auga</strong> ↑',
-  'ρ = {r} g/cm³ &gt; 1 → <strong>se hunde en agua</strong> ↓': 'ρ = {r} g/cm³ &gt; 1 → <strong>afúndese na auga</strong> ↓',
-  'ρ = {r} g/cm³ ≈ 1 → <strong>equilibrio en agua</strong> ⇌': 'ρ = {r} g/cm³ ≈ 1 → <strong>equilibrio na auga</strong> ⇌',
+  'ρ = {r} kg/L: <strong>es la referencia</strong> para saber si algo flota': 'ρ = {r} kg/L: <strong>é a referencia</strong> para saber se algo flota',
+  'ρ = {r} kg/L &lt; 1 → <strong>flota en agua</strong> ↑': 'ρ = {r} kg/L &lt; 1 → <strong>flota na auga</strong> ↑',
+  'ρ = {r} kg/L &gt; 1 → <strong>se hunde en agua</strong> ↓': 'ρ = {r} kg/L &gt; 1 → <strong>afúndese na auga</strong> ↓',
+  'ρ = {r} kg/L ≈ 1 → <strong>equilibrio en agua</strong> ⇌': 'ρ = {r} kg/L ≈ 1 → <strong>equilibrio na auga</strong> ⇌',
 
   // Panel «Comparar»
   '¿Qué se mantiene fijo?': 'Que se mantén fixo?',
@@ -44,18 +44,18 @@ window.I18N_GL = {
   'Objeto A': 'Obxecto A',
   'Objeto B': 'Obxecto B',
   'Selecciona dos materiales para comparar.': 'Selecciona dous materiais para comparar.',
-  'Misma densidad: {r} g/cm³.<br>Cada cm³ de A y de B tiene la misma masa.': 'Mesma densidade: {r} g/cm³.<br>Cada cm³ de A e de B ten a mesma masa.',
-  '<strong>A es más denso</strong> ({a} vs {b} g/cm³).<br>Cada cm³ de A tiene más masa que uno de B.': '<strong>A é máis denso</strong> ({a} vs {b} g/cm³).<br>Cada cm³ de A ten máis masa ca un de B.',
-  '<strong>B es más denso</strong> ({b} vs {a} g/cm³).<br>Cada cm³ de B tiene más masa que uno de A.': '<strong>B é máis denso</strong> ({b} vs {a} g/cm³).<br>Cada cm³ de B ten máis masa ca un de A.',
+  'Misma densidad: {r} kg/L.<br>Cada litro de A y de B tiene la misma masa.': 'Mesma densidade: {r} kg/L.<br>Cada litro de A e de B ten a mesma masa.',
+  '<strong>A es más denso</strong> ({a} vs {b} kg/L).<br>Cada litro de A tiene más masa que uno de B.': '<strong>A é máis denso</strong> ({a} vs {b} kg/L).<br>Cada litro de A ten máis masa ca un de B.',
+  '<strong>B es más denso</strong> ({b} vs {a} kg/L).<br>Cada litro de B tiene más masa que uno de A.': '<strong>B é máis denso</strong> ({b} vs {a} kg/L).<br>Cada litro de B ten máis masa ca un de A.',
 
   // Conceptos clave
   'Conceptos clave': 'Conceptos clave',
   'concepto-masa-macro': '<strong>Masa:</strong> cantidade de materia. Non depende da gravidade.',
   'concepto-densidad': '<strong>Densidade:</strong> propiedade intensiva — non cambia ao cortar o obxecto.',
   'concepto-balanza': '<strong>Balanza:</strong> compara masas. Co mesmo volume inclínase cara ao material máis denso; coa mesma masa queda equilibrada.',
-  'concepto-unidades': '<strong>Unidades:</strong> 1 g/cm³ = 1 g/mL = 1000 kg/m³',
-  'ρ = 1 g/cm³ → equilibrio en agua ⇌': 'ρ = 1 g/cm³ → equilibrio na auga ⇌',
-  'ρ > 1 g/cm³ → se hunde en agua ↓': 'ρ > 1 g/cm³ → afúndese na auga ↓',
+  'concepto-unidades': '<strong>Unidades:</strong> 1 L = 1 dm³ = 1000 cm³; 1 kg/L = 1 g/cm³ = 1000 kg/m³',
+  'ρ = 1 kg/L → equilibrio en agua ⇌': 'ρ = 1 kg/L → equilibrio na auga ⇌',
+  'ρ > 1 kg/L → se hunde en agua ↓': 'ρ > 1 kg/L → afúndese na auga ↓',
 
   // Tema
   'Cambiar tema': 'Cambiar tema',
@@ -84,11 +84,16 @@ window.I18N_GL = {
   'se hunden en agua →': 'afúndense na auga →',
   'tamaño no proporcional a V': 'tamaño non proporcional a V',
   'ANÁLISIS DEL MATERIAL': 'ANÁLISE DO MATERIAL',
-  'MASA DE 1 cm³': 'MASA DE 1 cm³',
+  'MASA DE 1 L': 'MASA DE 1 L',
   'MISMO VOLUMEN — ¿Hacia qué lado se inclina la balanza?': 'MESMO VOLUME — Cara a que lado se inclina a balanza?',
   'MISMA MASA — La balanza está equilibrada. ¿Por qué no ocupan lo mismo?': 'MESMA MASA — A balanza está equilibrada. Por que non ocupan o mesmo?',
   'Mismo volumen: {v}': 'Mesmo volume: {v}',
   'Misma masa: {m}': 'Mesma masa: {m}',
+  // Valor de los deslizadores para el lector de pantalla
+  '1 litro': '1 litro',
+  '1 kilogramo': '1 quilogramo',
+  '{v} litros': '{v} litros',
+  '{m} kilogramos': '{m} quilogramos',
   // Sello de la zona de simulación (js/sello.js)
   'Más simulaciones en simulaciencia.es': 'Máis simulacións en simulaciencia.es'
 };

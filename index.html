@@ -342,6 +342,27 @@
     [data-theme="contrast"] input[type="range"]::-webkit-slider-thumb {
       box-shadow: 0 0 0 2px #ffff00;
     }
+    /* Foco visible al llegar con el teclado (flechas, Re Pág / Av Pág, Inicio / Fin) */
+    input[type="range"]:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+    input[type="range"]:focus-visible::-webkit-slider-thumb {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 3px var(--accent-soft), 0 0 6px rgba(0,200,255,0.6);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg-panel);
+      cursor: pointer;
+    }
+    button:focus-visible, select:focus-visible, summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
     .slider-bounds {
       display: flex;
       justify-content: space-between;
@@ -883,18 +904,18 @@
         <div id="preset-vol-row" class="section">
           <div class="ctrl-row">
             <label class="ctrl-label" for="sl-preset-vol">Volumen de la muestra</label>
-            <span class="value-badge" id="val-preset-vol">200 cm³</span>
+            <span class="value-badge" id="val-preset-vol">1 L</span>
           </div>
-          <input type="range" id="sl-preset-vol" min="10" max="1000" value="200">
-          <div class="slider-bounds"><span>10 cm³</span><span>1000 cm³</span></div>
+          <input type="range" id="sl-preset-vol" min="1" max="100" step="1" value="10">
+          <div class="slider-bounds" aria-hidden="true"><span>0,1 L</span><span>10 L</span></div>
           <!-- Masa de la muestra: va ligada al volumen (m = ρ · V con ρ fija) -->
           <div style="margin-top:11px">
             <div class="ctrl-row">
               <label class="ctrl-label" for="sl-preset-mass">Masa de la muestra</label>
-              <span class="value-badge" id="val-preset-mass">200 g</span>
+              <span class="value-badge" id="val-preset-mass">1 kg</span>
             </div>
-            <input type="range" id="sl-preset-mass" min="10" max="1000" step="1" value="200">
-            <div class="slider-bounds"><span id="preset-mass-min">10 g</span><span id="preset-mass-max">1000 g</span></div>
+            <input type="range" id="sl-preset-mass" min="1" max="100" step="1" value="10">
+            <div class="slider-bounds" aria-hidden="true"><span id="preset-mass-min">0,1 kg</span><span id="preset-mass-max">10 kg</span></div>
           </div>
         </div>
 
@@ -902,17 +923,17 @@
         <div id="custom-rows" class="section" style="display:none">
           <div class="ctrl-row">
             <label class="ctrl-label" for="sl-mass">Masa</label>
-            <span class="value-badge" id="val-mass">200 g</span>
+            <span class="value-badge" id="val-mass">1 kg</span>
           </div>
-          <input type="range" id="sl-mass" min="1" max="2000" value="200">
-          <div class="slider-bounds"><span>1 g</span><span>2000 g</span></div>
+          <input type="range" id="sl-mass" min="1" max="200" step="1" value="10">
+          <div class="slider-bounds" aria-hidden="true"><span>0,1 kg</span><span>20 kg</span></div>
           <div style="margin-top:11px">
             <div class="ctrl-row">
               <label class="ctrl-label" for="sl-vol">Volumen</label>
-              <span class="value-badge" id="val-vol">200 cm³</span>
+              <span class="value-badge" id="val-vol">1 L</span>
             </div>
-            <input type="range" id="sl-vol" min="1" max="2000" value="200">
-            <div class="slider-bounds"><span>1 cm³</span><span>2000 cm³</span></div>
+            <input type="range" id="sl-vol" min="1" max="200" step="1" value="10">
+            <div class="slider-bounds" aria-hidden="true"><span>0,1 L</span><span>20 L</span></div>
           </div>
         </div>
 
@@ -921,16 +942,16 @@
           <div class="cards-grid">
             <div class="card">
               <div class="card-label">Masa</div>
-              <div class="card-value"><span id="read-mass">200</span><small>g</small></div>
+              <div class="card-value"><span id="read-mass">1</span><small>kg</small></div>
             </div>
             <div class="card">
               <div class="card-label">Volumen</div>
-              <div class="card-value"><span id="read-vol">200</span><small>cm³</small></div>
+              <div class="card-value"><span id="read-vol">1</span><small>L</small></div>
             </div>
           </div>
           <div class="card card-accent" style="margin-top:7px">
             <div class="card-label">Densidad</div>
-            <div class="card-value large"><span id="read-rho">1,00</span><small>g/cm³</small></div>
+            <div class="card-value large"><span id="read-rho">1,00</span><small>kg/L</small></div>
           </div>
         </div>
 
@@ -944,7 +965,7 @@
               <span><em>m</em> / <em>V</em></span>
             </div>
             <div class="formula-line formula-nums" id="formula-nums">
-              — g / — cm³ = — g/cm³
+              — kg / — L = — kg/L
             </div>
           </div>
         </div>
@@ -952,7 +973,7 @@
         <!-- Flotabilidad en agua -->
         <div class="section">
           <div id="float-badge" class="float-badge flota">
-            ρ &lt; 1 g/cm³ → flota en agua ↑
+            ρ &lt; 1 kg/L → flota en agua ↑
           </div>
         </div>
 
@@ -978,12 +999,12 @@
         <div class="section">
           <div class="ctrl-row">
             <label class="ctrl-label" id="shared-label" for="sl-shared">Volumen compartido</label>
-            <span class="value-badge" id="shared-val">200 cm³</span>
+            <span class="value-badge" id="shared-val">1 L</span>
           </div>
-          <input type="range" id="sl-shared" min="10" max="1000" value="200">
-          <div class="slider-bounds">
-            <span id="shared-min">10 cm³</span>
-            <span id="shared-max">1000 cm³</span>
+          <input type="range" id="sl-shared" min="1" max="100" step="1" value="10" aria-describedby="shared-hint">
+          <div class="slider-bounds" aria-hidden="true">
+            <span id="shared-min">0,1 L</span>
+            <span id="shared-max">10 L</span>
           </div>
           <p class="shared-slider-hint" id="shared-hint">Los dos objetos tienen el mismo volumen.</p>
         </div>
@@ -999,17 +1020,17 @@
             <div class="mini-card">
               <span class="mc-label">ρ</span>
               <span class="mc-val" id="rho-a">—</span>
-              <span class="mc-unit">g/cm³</span>
+              <span class="mc-unit">kg/L</span>
             </div>
             <div class="mini-card">
               <span class="mc-label">m</span>
               <span class="mc-val" id="mass-a">—</span>
-              <span class="mc-unit">g</span>
+              <span class="mc-unit">kg</span>
             </div>
             <div class="mini-card">
               <span class="mc-label">V</span>
               <span class="mc-val" id="vol-a">—</span>
-              <span class="mc-unit">cm³</span>
+              <span class="mc-unit">L</span>
             </div>
           </div>
         </div>
@@ -1025,17 +1046,17 @@
             <div class="mini-card">
               <span class="mc-label">ρ</span>
               <span class="mc-val" id="rho-b">—</span>
-              <span class="mc-unit">g/cm³</span>
+              <span class="mc-unit">kg/L</span>
             </div>
             <div class="mini-card">
               <span class="mc-label">m</span>
               <span class="mc-val" id="mass-b">—</span>
-              <span class="mc-unit">g</span>
+              <span class="mc-unit">kg</span>
             </div>
             <div class="mini-card">
               <span class="mc-label">V</span>
               <span class="mc-val" id="vol-b">—</span>
-              <span class="mc-unit">cm³</span>
+              <span class="mc-unit">L</span>
             </div>
           </div>
         </div>
@@ -1057,12 +1078,12 @@
               <li data-i18n="concepto-masa-macro"><strong>Masa:</strong> cantidad de materia. No depende de la gravedad.</li>
               <li data-i18n="concepto-densidad"><strong>Densidad:</strong> propiedad intensiva — no cambia al cortar el objeto.</li>
               <li data-i18n="concepto-balanza"><strong>Balanza:</strong> compara masas. Con el mismo volumen se inclina hacia el material más denso; con la misma masa queda equilibrada.</li>
-              <li data-i18n="concepto-unidades"><strong>Unidades:</strong> 1 g/cm³ = 1 g/mL = 1000 kg/m³</li>
+              <li data-i18n="concepto-unidades"><strong>Unidades:</strong> 1 L = 1 dm³ = 1000 cm³; 1 kg/L = 1 g/cm³ = 1000 kg/m³</li>
             </ul>
             <div class="quick-rules">
-              <span class="qr qr-float">ρ &lt; 1 g/cm³ → flota en agua ↑</span>
-              <span class="qr qr-eq">ρ = 1 g/cm³ → equilibrio en agua ⇌</span>
-              <span class="qr qr-sink">ρ &gt; 1 g/cm³ → se hunde en agua ↓</span>
+              <span class="qr qr-float">ρ &lt; 1 kg/L → flota en agua ↑</span>
+              <span class="qr qr-eq">ρ = 1 kg/L → equilibrio en agua ⇌</span>
+              <span class="qr qr-sink">ρ &gt; 1 kg/L → se hunde en agua ↓</span>
             </div>
           </div>
         </details>

@@ -20,20 +20,26 @@ const MATS = [
 ];
 
 const MAX_RHO  = 14.0;
-const REF_VOL  = 200;    // cm³ de referencia para escalar cajas
+const REF_VOL  = 2;      // L de referencia para escalar cajas
+
+// Unidades: volumen en litros (L), masa en kilogramos (kg) y densidad en kg/L.
+// 1 kg/L = 1 g/cm³, así que las densidades valen lo mismo que en g/cm³ y el agua
+// sigue siendo la referencia (1 kg/L): un litro de agua tiene un kilogramo de masa.
+// Los deslizadores van en décimas (valor 1 → 0,1 L o 0,1 kg) para que el teclado
+// avance a pasos que se notan y sin errores de redondeo.
 
 // ── Estado global ─────────────────────────────────────────────
 let simMode   = 'single';
 let cmpSub    = 'samevol';
 
 let singleMatIdx = 3;
-let singleVol    = 200;
-let customMass   = 200;
-let customVol    = 200;
+let singleVol    = 1;     // L
+let customMass   = 1;     // kg
+let customVol    = 1;     // L
 
 let matAIdx   = 1;
 let matBIdx   = 6;
-let sharedVal = 200;
+let sharedVal = 1;        // L (mismo volumen) o kg (misma masa)
 
 // ── Tema canvas ────────────────────────────────────────────
 let TH;
@@ -129,10 +135,10 @@ function computeObj(mat) {
 //  Tamaño de caja proporcional al volumen
 // ============================================================
 function boxSize(vol) {
-  // Escala logarítmica: el cambio visual es perceptible en todo el rango 1-2000 cm³
+  // Escala logarítmica: el cambio visual es perceptible en todo el rango 0,01-20 L
   // (la raíz cúbica se aplana demasiado pronto y deja zonas muertas en el slider)
   let sc = constrain(
-    map(log(max(vol, 1)), 0, log(2000), 0.25, 1.55),
+    map(log(max(vol, 0.01)), log(0.01), log(20), 0.25, 1.55),
     0.25, 1.55
   );
   return { bw: 190 * sc, bh: 215 * sc };
@@ -448,7 +454,7 @@ function drawDensityDisplay(rho, matCol, cx, cy) {
   fill(...TH.muted);
   textSize(11);
   textAlign(CENTER, BOTTOM);
-  text('g / cm³', cx, cy+ph/2-9);
+  text('kg / L', cx, cy+ph/2-9);
 
   textAlign(LEFT, BASELINE);
 }
@@ -472,9 +478,9 @@ function drawFormulaCanvas(mass, vol, rho, cx, cy) {
   fill(...TH.accent);
   textSize(11.5);
   textAlign(CENTER, CENTER);
-  let ms = mass >= 1000 ? i18n.num(mass/1000, 2)+' kg' : i18n.num(mass, 1)+' g';
-  let vs = vol.toFixed(0)+' cm³';
-  let rs = i18n.num(rho, 3)+' g/cm³';
+  let ms = fmtKg(mass);
+  let vs = fmtL(vol);
+  let rs = i18n.num(rho, 3)+' kg/L';
   text(ms + '  ÷  ' + vs, cx, cy+2);
   text('=  ' + rs, cx, cy+16);
   textAlign(LEFT, BASELINE);
@@ -546,7 +552,7 @@ function drawDensityBar(x, y, w, h, markers) {
   textAlign(LEFT, TOP);
   text('0', x, y+h+3);
   textAlign(RIGHT, TOP);
-  text('14 g/cm³', x+w, y+h+3);
+  text('14 kg/L', x+w, y+h+3);
 
   // Marcadores
   for (let m of markers) {
@@ -631,9 +637,8 @@ function drawSingleMode() {
   drawBracket(bx, by, bw, bh);
 
   // Anotaciones
-  let ms = s.mass >= 1000 ? i18n.num(s.mass/1000, 2)+' kg' : i18n.num(s.mass, 1)+' g';
-  drawAnnotationPill('m = ' + ms, bx, by + bh/2 + 22);
-  drawAnnotationPill('V = ' + s.vol.toFixed(0)+' cm³', bx, by - bh/2 - 22);
+  drawAnnotationPill('m = ' + fmtKg(s.mass), bx, by + bh/2 + 22);
+  drawAnnotationPill('V = ' + fmtL(s.vol), bx, by - bh/2 - 22);
 
   // Nombre del material
   fill(...s.mat.col);
@@ -655,7 +660,7 @@ function drawSingleMode() {
   // Densidad grande
   drawDensityDisplay(s.rho, s.mat.col, rx, 108);
 
-  // Masa de cada cm³ (la densidad, vista como masa de un cubito de 1 cm³)
+  // Masa de cada litro (la densidad, vista como masa de un cubo de 1 L)
   drawUnitCube(s.mat, s.rho, rx, 252);
 
   // Fórmula
@@ -667,8 +672,8 @@ function drawSingleMode() {
   drawDensityBar(28, height-28, width-56, 13, [{ rho: s.rho, col: s.mat.col }]);
 }
 
-// Cubito de 1 cm³ del material con su masa: la densidad leída como
-// «cuántos gramos tiene cada cm³».
+// Cubo de 1 L (10 cm de lado) del material con su masa: la densidad leída como
+// «cuántos kilogramos tiene cada litro».
 function drawUnitCube(mat, rho, cx, cy) {
   let pw = 208, ph = 96;
   fill(...TH.panel, 245);
@@ -697,27 +702,32 @@ function drawUnitCube(mat, rho, cx, cy) {
   fill(...TH.muted);
   textSize(9.5);
   textAlign(CENTER, TOP);
-  text('1 cm³', x + s/2 + dx/2, y + s + 6);
+  text('1 L', x + s/2 + dx/2, y + s + 6);
 
-  // Texto: masa de ese cm³
+  // Texto: masa de ese litro
   let tx = cx + 34;
   textAlign(CENTER, TOP);
   textSize(10);
-  text(i18n.t('MASA DE 1 cm³'), tx, cy - ph/2 + 16);
+  text(i18n.t('MASA DE 1 L'), tx, cy - ph/2 + 16);
   fill(...TH.text);
   textSize(24);
   textStyle(BOLD);
   textAlign(CENTER, CENTER);
-  text(fmtGrams(rho), tx, cy + 6);
+  text(fmtKg(rho), tx, cy + 6);
   textStyle(NORMAL);
   textAlign(LEFT, BASELINE);
 }
 
-function fmtGrams(m) {
-  if (m >= 1000) return i18n.num(m / 1000, 2) + ' kg';
-  if (m < 0.01)  return i18n.num(m, 4) + ' g';
-  return i18n.num(m, m < 10 ? 2 : 1) + ' g';
+// Número de masa o volumen con las cifras justas y sin ceros sobrantes:
+// 787 · 78,7 · 7,87 · 0,787 · 0,0787
+function fmtNum(v) {
+  let d = v >= 100 ? 1 : v >= 1 ? 2 : v >= 0.1 ? 3 : 4;
+  let s = Number(v).toFixed(d);
+  if (s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
+  return i18n.lang === 'en' ? s : s.replace('.', ',');
 }
+function fmtKg(m) { return fmtNum(m) + ' kg'; }
+function fmtL(v)  { return fmtNum(v) + ' L'; }
 
 // ============================================================
 //  MODO: Comparar (balanza de brazos)
@@ -774,9 +784,9 @@ function drawCompareMode() {
 
   // Rótulo de lo que se mantiene igual
   if (cmpSub === 'samevol') {
-    drawSharedBadge(i18n.t('Mismo volumen: {v}', { v: sharedVal + ' cm³' }), TH.accent);
+    drawSharedBadge(i18n.t('Mismo volumen: {v}', { v: fmtL(sharedVal) }), TH.accent);
   } else {
-    drawSharedBadge(i18n.t('Misma masa: {m}', { m: fmtGrams(a.mass) }), TH.warning);
+    drawSharedBadge(i18n.t('Misma masa: {m}', { m: fmtKg(a.mass) }), TH.warning);
   }
 
   // Barra densidades
@@ -900,11 +910,10 @@ function drawObjInfo(obj, cx, topY, col, letter) {
 
   fill(...TH.muted);
   textSize(10);
-  text('ρ = ' + i18n.num(obj.rho, 2) + ' g/cm³', cx, topY + 30);
+  text('ρ = ' + i18n.num(obj.rho, 2) + ' kg/L', cx, topY + 30);
 
   // Masa y volumen
-  let vs = obj.vol.toFixed(0)+' cm³';
-  text('m = ' + fmtGrams(obj.mass) + '   V = ' + vs, cx, topY + 44);
+  text('m = ' + fmtKg(obj.mass) + '   V = ' + fmtL(obj.vol), cx, topY + 44);
 
   textAlign(LEFT, BASELINE);
 }
@@ -933,7 +942,7 @@ function populateSelects() {
       let opt = document.createElement('option');
       opt.value = i;
       opt.textContent = m.rho
-        ? i18n.t(m.name) + '  (' + i18n.num(m.rho, 2) + ' g/cm³)'
+        ? i18n.t(m.name) + '  (' + i18n.num(m.rho, 2) + ' kg/L)'
         : i18n.t(m.name);
       el.appendChild(opt);
     });
@@ -962,13 +971,13 @@ function setupDomListeners() {
   document.getElementById('sub-samevol').addEventListener('click', () => {
     cmpSub = 'samevol';
     setActive('sub-samevol', ['sub-samevol', 'sub-samemass']);
-    resetShared(200, 10, 1000);
+    resetShared(10);
     updatePanel();
   });
   document.getElementById('sub-samemass').addEventListener('click', () => {
     cmpSub = 'samemass';
     setActive('sub-samemass', ['sub-samevol', 'sub-samemass']);
-    resetShared(200, 10, 1000);
+    resetShared(10);
     updatePanel();
   });
 
@@ -982,12 +991,11 @@ function setupDomListeners() {
   });
   slider('sl-preset-vol', v => { singleVol = v; });
   // Masa de un material real: al moverla cambia el volumen, porque ρ no cambia.
-  // El paso del deslizador es ρ, así que el volumen siempre sale entero.
-  document.getElementById('sl-preset-mass').addEventListener('input', function() {
-    let rho = MATS[singleMatIdx].rho || 1;
-    singleVol = constrain(round(parseFloat(this.value) / rho), 10, 1000);
-    document.getElementById('sl-preset-vol').value = singleVol;
-    updatePanel();
+  // Comparte posición con el de volumen (cada paso es 0,1 L más, es decir,
+  // ρ · 0,1 kg más), así que ambos se mueven juntos.
+  slider('sl-preset-mass', v => {
+    singleVol = v;
+    document.getElementById('sl-preset-vol').value = Math.round(v * 10);
   });
   slider('sl-mass',       v => { customMass = v; });
   slider('sl-vol',        v => { customVol = v; });
@@ -1040,13 +1048,28 @@ function setupDomListeners() {
 }
 
 // ── Helpers DOM ──────────────────────────────────────────────
+// Los deslizadores son <input type="range"> nativos: con el foco en ellos se
+// mueven con las flechas, Re Pág / Av Pág e Inicio / Fin. Su valor va en décimas
+// (1 → 0,1 L o 0,1 kg).
 function slider(id, cb) {
   let el = document.getElementById(id);
   if (!el) return;
   el.addEventListener('input', function() {
-    cb(parseInt(this.value));
+    cb(parseInt(this.value) / 10);
     updatePanel();
   });
+}
+
+// Valor que anuncia el lector de pantalla (si no, solo diría «10»)
+function setValueText(id, txt) {
+  let el = document.getElementById(id);
+  if (el) el.setAttribute('aria-valuetext', txt);
+}
+function spokenL(v) {
+  return fmtNum(v) === '1' ? i18n.t('1 litro') : i18n.t('{v} litros', { v: fmtNum(v) });
+}
+function spokenKg(m) {
+  return fmtNum(m) === '1' ? i18n.t('1 kilogramo') : i18n.t('{m} kilogramos', { m: fmtNum(m) });
 }
 
 function setActive(activeId, allIds) {
@@ -1056,24 +1079,22 @@ function setActive(activeId, allIds) {
   }
 }
 
-function resetShared(val, min, max) {
+function resetShared(pos) {
   let el = document.getElementById('sl-shared');
   if (!el) return;
-  el.min = min;
-  el.max = max;
-  el.value = val;
-  sharedVal = val;
+  el.value = pos;
+  sharedVal = pos / 10;
 }
 
 // ── Sync inicial ─────────────────────────────────────────────
 function syncFromDom() {
   singleMatIdx = parseInt(document.getElementById('sel-material').value || '3');
-  singleVol    = parseInt(document.getElementById('sl-preset-vol').value || '200');
-  customMass   = parseInt(document.getElementById('sl-mass').value || '200');
-  customVol    = parseInt(document.getElementById('sl-vol').value || '200');
+  singleVol    = parseInt(document.getElementById('sl-preset-vol').value || '10') / 10;
+  customMass   = parseInt(document.getElementById('sl-mass').value || '10') / 10;
+  customVol    = parseInt(document.getElementById('sl-vol').value || '10') / 10;
   matAIdx      = parseInt(document.getElementById('sel-mat-a').value || '1');
   matBIdx      = parseInt(document.getElementById('sel-mat-b').value || '6');
-  sharedVal    = parseInt(document.getElementById('sl-shared').value || '200');
+  sharedVal    = parseInt(document.getElementById('sl-shared').value || '10') / 10;
   updatePanel();
 }
 
@@ -1084,24 +1105,27 @@ function updatePanel() {
   let b = getObjB();
 
   // Fills de sliders
-  setFill('sl-preset-vol', 10, 1000, singleVol);
+  setFill('sl-preset-vol', 0.1, 10, singleVol);
   syncPresetMass();
-  setFill('sl-mass',       1,  2000, customMass);
-  setFill('sl-vol',        1,  2000, customVol);
-  setFill('sl-shared',     10, 1000, sharedVal);
+  setFill('sl-mass',       0.1, 20, customMass);
+  setFill('sl-vol',        0.1, 20, customVol);
+  setFill('sl-shared',     0.1, 10, sharedVal);
 
-  // Badges de valor
-  setText('val-preset-vol', singleVol + ' cm³');
-  setText('val-mass',       customMass + ' g');
-  setText('val-vol',        customVol + ' cm³');
+  // Badges de valor (y el mismo valor para el lector de pantalla)
+  setText('val-preset-vol', fmtL(singleVol));
+  setText('val-mass',       fmtKg(customMass));
+  setText('val-vol',        fmtL(customVol));
+  setValueText('sl-preset-vol', spokenL(singleVol));
+  setValueText('sl-mass',       spokenKg(customMass));
+  setValueText('sl-vol',        spokenL(customVol));
 
   // Readouts single
-  setText('read-mass', fmtVal(s.mass));
-  setText('read-vol',  fmtVal(s.vol));
+  setText('read-mass', fmtNum(s.mass));
+  setText('read-vol',  fmtNum(s.vol));
   setText('read-rho',  i18n.num(s.rho, 2));
 
   // Fórmula
-  let fms = fmtVal(s.mass)+' g / '+fmtVal(s.vol)+' cm³ = '+i18n.num(s.rho, 3)+' g/cm³';
+  let fms = fmtKg(s.mass)+' / '+fmtL(s.vol)+' = '+i18n.num(s.rho, 3)+' kg/L';
   setText('formula-nums', fms);
 
   // Float badge
@@ -1110,42 +1134,44 @@ function updatePanel() {
   // Compare shared
   if (cmpSub === 'samevol') {
     setText('shared-label', i18n.t('Volumen compartido'));
-    setText('shared-val',   sharedVal + ' cm³');
-    setText('shared-min',   '10 cm³');
-    setText('shared-max',   '1000 cm³');
+    setText('shared-val',   fmtL(sharedVal));
+    setText('shared-min',   fmtL(0.1));
+    setText('shared-max',   fmtL(10));
+    setValueText('sl-shared', spokenL(sharedVal));
     setText('shared-hint',  i18n.t('Los dos objetos ocupan exactamente el mismo volumen.'));
   } else {
     setText('shared-label', i18n.t('Masa compartida'));
-    setText('shared-val',   sharedVal + ' g');
-    setText('shared-min',   '10 g');
-    setText('shared-max',   '1000 g');
+    setText('shared-val',   fmtKg(sharedVal));
+    setText('shared-min',   fmtKg(0.1));
+    setText('shared-max',   fmtKg(10));
+    setValueText('sl-shared', spokenKg(sharedVal));
     setText('shared-hint',  i18n.t('Los dos objetos tienen exactamente la misma masa.'));
   }
 
   // Compare readouts
   setText('rho-a',  i18n.num(a.rho, 2));
-  setText('mass-a', fmtVal(a.mass));
-  setText('vol-a',  fmtVal(a.vol));
+  setText('mass-a', fmtNum(a.mass));
+  setText('vol-a',  fmtNum(a.vol));
   setText('rho-b',  i18n.num(b.rho, 2));
-  setText('mass-b', fmtVal(b.mass));
-  setText('vol-b',  fmtVal(b.vol));
+  setText('mass-b', fmtNum(b.mass));
+  setText('vol-b',  fmtNum(b.vol));
 
   updateCompareResult(a.rho, b.rho);
 }
 
-// Deslizador de masa de los materiales reales: rango ρ·10 … ρ·1000 g (el mismo
-// que el de volumen) y valor m = ρ · V.
+// Deslizador de masa de los materiales reales: misma posición que el de volumen
+// (0,1 … 10 L), así que va de ρ · 0,1 kg a ρ · 10 kg y marca m = ρ · V.
 function syncPresetMass() {
   let el = document.getElementById('sl-preset-mass');
   if (!el) return;
   let rho = MATS[singleMatIdx].rho || 1;
-  let lo = rho * 10, hi = rho * 1000, m = rho * singleVol;
-  el.min = lo; el.max = hi; el.step = rho;
-  el.value = m;
+  let lo = rho * 0.1, hi = rho * 10, m = rho * singleVol;
+  el.value = Math.round(singleVol * 10);
   setFill('sl-preset-mass', lo, hi, m);
-  setText('val-preset-mass', fmtGrams(m));
-  setText('preset-mass-min', fmtGrams(lo));
-  setText('preset-mass-max', fmtGrams(hi));
+  setText('val-preset-mass', fmtKg(m));
+  setText('preset-mass-min', fmtKg(lo));
+  setText('preset-mass-max', fmtKg(hi));
+  setValueText('sl-preset-mass', spokenKg(m));
 }
 
 function updateFloatBadge(rho, esAgua) {
@@ -1155,16 +1181,16 @@ function updateFloatBadge(rho, esAgua) {
   if (esAgua) {
     // «El agua queda en equilibrio en agua» no dice nada: es la referencia
     el.className = 'float-badge equilibrio';
-    el.innerHTML = i18n.t('ρ = {r} g/cm³: <strong>es la referencia</strong> para saber si algo flota', { r: r });
+    el.innerHTML = i18n.t('ρ = {r} kg/L: <strong>es la referencia</strong> para saber si algo flota', { r: r });
   } else if (rho < 0.995) {
     el.className = 'float-badge flota';
-    el.innerHTML = i18n.t('ρ = {r} g/cm³ &lt; 1 → <strong>flota en agua</strong> ↑', { r: r });
+    el.innerHTML = i18n.t('ρ = {r} kg/L &lt; 1 → <strong>flota en agua</strong> ↑', { r: r });
   } else if (rho > 1.005) {
     el.className = 'float-badge hunde';
-    el.innerHTML = i18n.t('ρ = {r} g/cm³ &gt; 1 → <strong>se hunde en agua</strong> ↓', { r: r });
+    el.innerHTML = i18n.t('ρ = {r} kg/L &gt; 1 → <strong>se hunde en agua</strong> ↓', { r: r });
   } else {
     el.className = 'float-badge equilibrio';
-    el.innerHTML = i18n.t('ρ = {r} g/cm³ ≈ 1 → <strong>equilibrio en agua</strong> ⇌', { r: r });
+    el.innerHTML = i18n.t('ρ = {r} kg/L ≈ 1 → <strong>equilibrio en agua</strong> ⇌', { r: r });
   }
 }
 
@@ -1174,13 +1200,13 @@ function updateCompareResult(rA, rB) {
   let diff = Math.abs(rA - rB);
   if (diff < 0.02) {
     el.className = 'compare-result same';
-    el.innerHTML = i18n.t('Misma densidad: {r} g/cm³.<br>Cada cm³ de A y de B tiene la misma masa.', { r: i18n.num(rA, 2) });
+    el.innerHTML = i18n.t('Misma densidad: {r} kg/L.<br>Cada litro de A y de B tiene la misma masa.', { r: i18n.num(rA, 2) });
   } else if (rA > rB) {
     el.className = 'compare-result a-denser';
-    el.innerHTML = i18n.t('<strong>A es más denso</strong> ({a} vs {b} g/cm³).<br>Cada cm³ de A tiene más masa que uno de B.', { a: i18n.num(rA, 2), b: i18n.num(rB, 2) });
+    el.innerHTML = i18n.t('<strong>A es más denso</strong> ({a} vs {b} kg/L).<br>Cada litro de A tiene más masa que uno de B.', { a: i18n.num(rA, 2), b: i18n.num(rB, 2) });
   } else {
     el.className = 'compare-result b-denser';
-    el.innerHTML = i18n.t('<strong>B es más denso</strong> ({b} vs {a} g/cm³).<br>Cada cm³ de B tiene más masa que uno de A.', { a: i18n.num(rA, 2), b: i18n.num(rB, 2) });
+    el.innerHTML = i18n.t('<strong>B es más denso</strong> ({b} vs {a} kg/L).<br>Cada litro de B tiene más masa que uno de A.', { a: i18n.num(rA, 2), b: i18n.num(rB, 2) });
   }
 }
 
@@ -1196,9 +1222,3 @@ function setText(id, txt) {
   if (el) el.textContent = txt;
 }
 
-function fmtVal(v) {
-  if (v >= 10000) return i18n.num(v/1000, 1) + '·10³';
-  if (v >= 1000)  return i18n.num(v/1000, 2) + '·10³';
-  if (v >= 100)   return i18n.num(v, 1);
-  return i18n.num(v, 2);
-}
