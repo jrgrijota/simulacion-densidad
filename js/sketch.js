@@ -94,6 +94,7 @@ function setup() {
   populateSelects();
   setupDomListeners();
   syncFromDom();
+  applyUrlParams();
 }
 
 function draw() {
@@ -1096,6 +1097,68 @@ function syncFromDom() {
   matBIdx      = parseInt(document.getElementById('sel-mat-b').value || '6');
   sharedVal    = parseInt(document.getElementById('sl-shared').value || '10') / 10;
   updatePanel();
+}
+
+// ── Simulación ya preparada desde la dirección ───────────────
+// Las fichas de actividades enlazan a la simulación con el modo y los valores de
+// cada actividad, por ejemplo:
+//   ?modo=objeto&material=aluminio&volumen=2
+//   ?modo=objeto&material=personalizado&masa=15&volumen=10
+//   ?modo=comparar&comparar=masa&a=corcho&b=plomo&valor=1
+// Volumen en L y masa en kg (vale «2,5» o «2.5»). Se aplican pulsando los mismos
+// controles que usaría el alumnado, así que el panel queda igual que a mano.
+// Un valor que no se entiende se ignora y se queda el de partida.
+const MAT_ALIAS = { plastico:'plast', pet:'plast', aluminio:'alum', personalizado:'custom' };
+
+function applyUrlParams() {
+  let p = new URLSearchParams(location.search);
+  let num = v => {
+    let n = parseFloat(String(v).replace(',', '.'));
+    return isFinite(n) && n > 0 ? n : null;
+  };
+  let matIdx = v => {
+    if (!v) return -1;
+    let id = v.toLowerCase();
+    return MATS.findIndex(m => m.id === (MAT_ALIAS[id] || id));
+  };
+  let choose = (selId, v, allowCustom) => {
+    let i = matIdx(v);
+    if (i < 0 || (!allowCustom && MATS[i].cat === 'custom')) return;
+    let el = document.getElementById(selId);
+    el.value = String(i);
+    el.dispatchEvent(new Event('change'));
+  };
+  // Los deslizadores van en décimas; el navegador recorta al mínimo y al máximo.
+  let move = (slId, v) => {
+    if (v == null) return;
+    let el = document.getElementById(slId);
+    el.value = String(Math.round(v * 10));
+    el.dispatchEvent(new Event('input'));
+  };
+  let click = id => document.getElementById(id).click();
+
+  let modo = (p.get('modo') || '').toLowerCase();
+  if (modo === 'comparar') {
+    click('mode-compare');
+    let sub = (p.get('comparar') || '').toLowerCase();
+    if (sub === 'masa') click('sub-samemass');
+    choose('sel-mat-a', p.get('a'), false);
+    choose('sel-mat-b', p.get('b'), false);
+    move('sl-shared', num(p.get('valor')));
+  } else {
+    if (modo === 'objeto') click('mode-single');
+    choose('sel-material', p.get('material'), true);
+    let vol = num(p.get('volumen')), mass = num(p.get('masa'));
+    if (MATS[singleMatIdx].cat === 'custom') {
+      move('sl-mass', mass);
+      move('sl-vol', vol);
+    } else if (vol != null) {
+      move('sl-preset-vol', vol);
+    } else if (mass != null) {
+      // Con un material real, la masa fija el volumen: V = m / ρ.
+      move('sl-preset-vol', mass / MATS[singleMatIdx].rho);
+    }
+  }
 }
 
 // ── Actualizar panel lateral ──────────────────────────────
