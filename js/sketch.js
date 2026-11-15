@@ -76,6 +76,20 @@ const CANVAS_THEMES = {
     grid:    [20,  20,  20 ],
     water:   [100, 180, 255],
     warning: [255, 170, 0  ],
+  },
+  // Paleta SimulaCiencia (la de simulaciencia.es y la de los vídeos del canal).
+  marca: {
+    bg:      [248, 250, 252],
+    panel:   [255, 255, 255],
+    text:    [30,  41,  59 ],
+    muted:   [100, 116, 139],
+    accent:  [3,   105, 161],
+    border:  [203, 213, 225],
+    grid:    [234, 239, 245],
+    water:   [2,   132, 199],
+    warning: [180, 83,  9  ],
+    colA:    [3,   105, 161],
+    colB:    [194, 65,  12 ],
   }
 };
 
@@ -773,8 +787,8 @@ function drawCompareMode() {
 
   // ── Datos de cada objeto (arriba, fijos) ──
   let ax = BAL.cx - BAL.arm, bxx = BAL.cx + BAL.arm;
-  drawObjInfo(a, ax, 36, COL_A, 'A');
-  drawObjInfo(b, bxx, 36, COL_B, 'B');
+  drawObjInfo(a, ax, 36, TH.colA || COL_A, 'A');
+  drawObjInfo(b, bxx, 36, TH.colB || COL_B, 'B');
 
   // ── Brazo: se acerca suavemente al ángulo de equilibrio ──
   let target = balanceTarget(a.mass, b.mass);
@@ -792,8 +806,8 @@ function drawCompareMode() {
 
   // Barra densidades
   drawDensityBar(28, height-28, width-56, 13, [
-    { rho: a.rho, col: COL_A },
-    { rho: b.rho, col: COL_B }
+    { rho: a.rho, col: TH.colA || COL_A },
+    { rho: b.rho, col: TH.colB || COL_B }
   ]);
 }
 
@@ -844,8 +858,8 @@ function drawBalance(a, b, sA, sB, ang) {
   ellipse(cx, py, 4, 4);
 
   // Platillos (siempre horizontales) sobre una varilla vertical
-  drawPan(lx, ly, sA, a.mat, COL_A);
-  drawPan(rx, ry, sB, b.mat, COL_B);
+  drawPan(lx, ly, sA, a.mat, TH.colA || COL_A);
+  drawPan(rx, ry, sB, b.mat, TH.colB || COL_B);
 }
 
 function drawPan(x, y, sz, mat, col) {
@@ -1136,6 +1150,10 @@ function applyUrlParams() {
     el.dispatchEvent(new Event('input'));
   };
   let click = id => document.getElementById(id).click();
+
+  // ?tema=simulaciencia (o claro, oscuro, contraste) elige el tema visual.
+  let tema = { simulaciencia: 'marca', marca: 'marca', claro: 'light', oscuro: 'dark', contraste: 'contrast' }[(p.get('tema') || '').toLowerCase()];
+  if (tema) { let b = document.querySelector(`.theme-opt[data-theme="${tema}"]`); if (b) b.click(); }
 
   let modo = (p.get('modo') || '').toLowerCase();
   if (modo === 'comparar') {

@@ -93,6 +93,39 @@
     }
 
     /* ── Alto contraste ─────────────────────────────────── */
+    /* ── Tema SimulaCiencia (paleta de marca, la de simulaciencia.es y los vídeos) ── */
+    [data-theme="marca"] {
+      --bg-body:          #f8fafc;
+      --bg-panel:         #ffffff;
+      --bg-card:          #f8fafc;
+      --bg-input:         #f1f5f9;
+      --bg-hover:         #e0f2fe;
+      --text-main:        #1e293b;
+      --text-muted:       #64748b;
+      --text-label:       #475569;
+      --accent:           #0369a1;
+      --accent-strong:    #075985;
+      --accent-soft:      rgba(3,105,161,0.08);
+      --accent-border:    rgba(3,105,161,0.30);
+      --border-main:      #e2e8f0;
+      --border-strong:    #cbd5e1;
+      --success:          #0f766e;
+      --success-bg:       rgba(15,118,110,0.08);
+      --success-border:   rgba(15,118,110,0.30);
+      --warning:          #b45309;
+      --warning-bg:       rgba(180,83,9,0.08);
+      --warning-border:   rgba(180,83,9,0.30);
+      --danger:           #dc2626;
+      --danger-bg:        rgba(220,38,38,0.08);
+      --danger-border:    rgba(220,38,38,0.30);
+      --col-a:            #0369a1;
+      --col-b:            #c2410c;
+      --col-a-bg:         rgba(3,105,161,0.08);
+      --col-b-bg:         rgba(194,65,12,0.08);
+      --col-a-border:     rgba(3,105,161,0.30);
+      --col-b-border:     rgba(194,65,12,0.30);
+    }
+
     [data-theme="contrast"] {
       --bg-body:          #000000;
       --bg-panel:         #000000;
@@ -396,7 +429,8 @@
     }
     .custom-select:hover { border-color: var(--accent-border); }
     .custom-select:focus { border-color: var(--accent); }
-    [data-theme="light"] .custom-select {
+    [data-theme="light"] .custom-select,
+    [data-theme="marca"] .custom-select {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236070a0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     }
     [data-theme="contrast"] .custom-select {
@@ -799,6 +833,7 @@
     .dark-sw     { background: #141820; border: 1.5px solid #4a5060; }
     .light-sw    { background: #f0f2f8; border: 1.5px solid #a0a8c0; }
     .contrast-sw { background: #000000; border: 1.5px solid #ffff00; }
+    .marca-sw    { background: linear-gradient(135deg, #f8fafc 50%, #0369a1 50%); border: 1.5px solid #00c8ff; }
 
     /* ── Divider ───────────────────────────────────────── */
     hr.divider {
@@ -1110,6 +1145,9 @@
         <div class="theme-panel" id="theme-panel" aria-hidden="true">
           <p class="theme-panel-title">Tema visual</p>
           <div class="theme-opts">
+            <button class="theme-opt" data-theme="marca">
+              <span class="theme-swatch marca-sw"></span>SimulaCiencia
+            </button>
             <button class="theme-opt active" data-theme="dark">
               <span class="theme-swatch dark-sw"></span>Oscuro
             </button>
