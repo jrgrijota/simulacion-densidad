@@ -820,8 +820,8 @@ function drawSingleMode() {
   if (TH.fun) {
     bw *= 0.85; bh *= 0.85; by = 252;
     drawBocadillo(i18n.t(s.mat.name), mensajeMascota, s.mat.col);
-    tarjeta(14, 68, 390, 384, 20);
-    tarjeta(414, 68, 332, 384, 20);
+    tarjeta(14, 68, 390, 372, 20);
+    tarjeta(414, 68, 332, 372, 20);
   }
 
   // ── Objeto ──
