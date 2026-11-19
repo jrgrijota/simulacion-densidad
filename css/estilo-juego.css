@@ -1,0 +1,237 @@
+/* ════════════════════════════════════════════════════
+   ESTILO SIMULACIENCIA · JUEGO (el de cambios-estado)
+   Capa sobre los estilos de index.html para los temas Oscuro («Pizarra»)
+   y Claro («Día»). Alto contraste y SimulaCiencia no cambian.
+════════════════════════════════════════════════════ */
+@font-face {
+    font-family: 'Fredoka';
+    src: url('fonts/fredoka.woff2') format('woff2');
+    font-weight: 300 700;
+    font-display: swap;
+}
+
+/* Variables: Pizarra (oscuro de tono medio, azules de la marca) */
+html:not([data-theme="contrast"]):not([data-theme="marca"]) {
+    --bg-body: #0b2236;   --bg-panel: transparent; --bg-card: #1d4a72;
+    --bg-input: #0e2b45;  --bg-hover: #24577f;
+    --text-main: #eef7ff; --text-muted: #b5d3ec; --text-label: #d6e8f7;
+    --accent: #00c8ff;    --accent-strong: #5fdcff;
+    --accent-soft: rgba(0,200,255,0.14); --accent-border: rgba(0,200,255,0.45);
+    --border-main: #2d6996; --border-strong: #3c7cab;
+    --success: #34e3a8; --success-bg: rgba(52,227,168,0.12); --success-border: rgba(52,227,168,0.5);
+    --warning: #ffd84a; --warning-bg: rgba(255,216,74,0.12); --warning-border: rgba(255,216,74,0.5);
+    --danger: #ff8a8a;  --danger-bg: rgba(255,107,107,0.12); --danger-border: rgba(255,107,107,0.5);
+    --col-a: #7fb8ff; --col-b: #ffa25a;
+    --col-a-bg: rgba(127,184,255,0.12); --col-b-bg: rgba(255,162,90,0.12);
+    --col-a-border: rgba(127,184,255,0.5); --col-b-border: rgba(255,162,90,0.5);
+    --j-panel: #15395a; --j-panel-2: #1d4a72; --j-line: #2d6996; --j-sombra: #071a2b;
+    --j-title: #ffffff; --j-accent-ink: #04263d;
+    --j-bg2: #154a70; --j-puntos: rgba(255,255,255,0.06);
+    --j-shadow: 0 10px 28px rgba(3,15,28,0.45);
+    --font-fun: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif;
+}
+/* Día: claro sin llegar a blanco */
+html[data-theme="light"]:not([data-theme="marca"]) {
+    --bg-body: #dde9f3;   --bg-card: #e4eff8;
+    --bg-input: #d3e2ef;  --bg-hover: #c6dbec;
+    --text-main: #13304a; --text-muted: #3f5f7a; --text-label: #1d3b57;
+    --accent: #0369a1;    --accent-strong: #075985;
+    --accent-soft: rgba(3,105,161,0.10); --accent-border: rgba(3,105,161,0.45);
+    --border-main: #a9c6de; --border-strong: #8fb3d1;
+    --success: #0a7d58; --success-bg: rgba(10,125,88,0.10); --success-border: rgba(10,125,88,0.45);
+    --warning: #b45309; --warning-bg: rgba(180,83,9,0.10); --warning-border: rgba(180,83,9,0.45);
+    --danger: #c02828;  --danger-bg: rgba(192,40,40,0.08); --danger-border: rgba(192,40,40,0.4);
+    --col-a: #1f5fbf; --col-b: #c2410c;
+    --col-a-bg: rgba(31,95,191,0.10); --col-b-bg: rgba(194,65,12,0.10);
+    --col-a-border: rgba(31,95,191,0.45); --col-b-border: rgba(194,65,12,0.45);
+    --j-panel: #f7fbff; --j-panel-2: #e4eff8; --j-line: #a9c6de; --j-sombra: #a9c6de;
+    --j-title: #0b2236; --j-accent-ink: #ffffff;
+    --j-bg2: #eef5fb; --j-puntos: rgba(11,34,54,0.07);
+    --j-shadow: 0 10px 24px rgba(11,34,54,0.14);
+}
+
+/* ── Base ─────────────────────────────────────────── */
+html:not([data-theme="contrast"]):not([data-theme="marca"]) body {
+    background: radial-gradient(ellipse at 60% 0%, var(--j-bg2) 0%, var(--bg-body) 75%) fixed;
+    font-size: 14.5px;
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .control-panel {
+    background: transparent; border-right: 0;
+    padding: 16px 14px 18px 18px; gap: 12px;
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .simulation-panel { background: transparent; }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .simulation-panel::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(circle, var(--j-puntos) 1.5px, transparent 1.6px);
+    background-size: 28px 28px;
+}
+/* El marco del tablero lo dibuja el lienzo (escala con él) */
+html:not([data-theme="contrast"]):not([data-theme="marca"]) #canvas-container canvas {
+    border-radius: 0; box-shadow: none;
+    /* Encoge sin deformarse (antes se aplastaba en el móvil) */
+    width: auto !important; height: auto !important;
+}
+/* Franja abajo para el sello y el botón de tema: no tapan el tablero */
+#canvas-container { padding-bottom: 60px; }
+
+/* ── Cabecera ─────────────────────────────────────── */
+html:not([data-theme="contrast"]):not([data-theme="marca"]) header { padding: 2px 2px 4px; border-bottom: 0; }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) header h1 {
+    font: 700 1.75rem/1.05 var(--font-fun); color: var(--j-title);
+    letter-spacing: 0.2px; text-shadow: 0 3px 0 var(--j-line);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .header-icon {
+    width: 48px; height: 48px; padding: 3px;
+    background: var(--j-panel); border: 2px solid var(--j-line); border-radius: 14px;
+    box-shadow: 0 4px 0 var(--j-sombra);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .subtitle {
+    font: 600 1rem var(--font-fun); color: var(--text-muted); letter-spacing: 0.3px;
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .header-details {
+    background: transparent; border: 0; border-radius: 0;
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .header-details summary {
+    padding: 2px 0; font: 500 0.9rem var(--font-fun); color: var(--text-muted);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .header-details summary::before { color: var(--accent); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .header-details-body { border-top: 0; padding: 6px 0 2px; }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .header-details-body p { font-size: 0.84rem; }
+
+/* ── Cada sección del panel es una tarjeta ─────────── */
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mode-panel { display: flex; flex-direction: column; gap: 12px; }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mode-panel[hidden],
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mode-panel[style*="none"] { display: none; }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .section {
+    background: var(--j-panel); border: 2px solid var(--j-line); border-radius: 20px;
+    padding: 14px 16px; box-shadow: var(--j-shadow);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .section-label {
+    font: 700 1.05rem var(--font-fun); text-transform: none; letter-spacing: 0.2px;
+    color: var(--j-title); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .section-label::before {
+    content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--text-muted); opacity: 0.8; flex: none;
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .ctrl-label {
+    font: 600 0.98rem var(--font-fun); color: var(--j-title);
+}
+
+/* Selector de modo: fichas grandes */
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mode-switch { gap: 10px; }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mode-btn {
+    background: var(--j-panel-2); border: 3px solid transparent; border-radius: 18px;
+    color: var(--j-title); font: 700 1rem var(--font-fun); padding: 10px 6px 9px;
+    box-shadow: 0 4px 0 var(--j-sombra);
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.12s;
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mode-btn:hover { transform: translateY(-2px); background: var(--j-panel-2); color: var(--j-title); border-color: transparent; }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mode-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--j-sombra); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mode-btn.active { background: var(--j-panel); border-color: var(--accent); color: var(--j-title); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mode-sub { font: 500 0.74rem var(--font-fun); color: var(--text-muted); }
+
+/* Campos */
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .custom-select {
+    background-color: var(--j-panel-2); border: 2px solid var(--j-line); color: var(--j-title);
+    border-radius: 999px; padding: 9px 16px; font: 600 0.98rem var(--font-fun);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .custom-select:hover { border-color: var(--accent); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .custom-select option { background: var(--j-panel); color: var(--text-main); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .value-badge {
+    background: var(--accent); color: var(--j-accent-ink); border: 0;
+    border-radius: 999px; padding: 2px 11px; font: 700 0.95rem var(--font-fun);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) input[type="range"] {
+    height: 10px; border-radius: 999px;
+    background: linear-gradient(to right, var(--accent) 0%, var(--accent) var(--fill, 20%), var(--bg-input) var(--fill, 20%));
+    box-shadow: inset 0 0 0 2px var(--border-main);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) input[type="range"]::-webkit-slider-thumb {
+    width: 24px; height: 24px; border: 3px solid var(--j-panel); box-shadow: 0 3px 0 var(--j-sombra);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) input[type="range"]::-moz-range-thumb {
+    width: 20px; height: 20px; border: 3px solid var(--j-panel);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .slider-bounds { font-size: 0.78rem; }
+
+/* Tarjetas de datos: número grande en Fredoka */
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .card,
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mini-card {
+    background: var(--j-panel-2); border: 0; border-radius: 16px; padding: 10px 12px;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.12);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .card-accent { border: 2px solid var(--accent); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .card-label,
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mc-label {
+    font: 600 0.8rem var(--font-fun); text-transform: none; letter-spacing: 0.2px; color: var(--text-muted);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .card-value,
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mc-val {
+    font: 700 1.5rem/1.1 var(--font-fun); color: var(--j-title); font-variant-numeric: tabular-nums;
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .mc-val { font-size: 1.15rem; }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .card-value.large { font-size: 1.85rem; }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .card-accent .card-value { color: var(--accent); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .formula-box {
+    background: var(--j-panel-2); border: 0; border-radius: 16px;
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .formula-title { font: 600 0.82rem var(--font-fun); text-transform: none; letter-spacing: 0.2px; }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .formula-line { font-family: var(--font-fun); font-size: 1rem; }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .float-badge,
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .compare-result {
+    border-width: 2px; border-radius: 16px; padding: 9px 13px; font-size: 0.88rem;
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .float-badge strong,
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .compare-result strong { font-family: var(--font-fun); font-size: 1.02rem; }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .qr { border-radius: 999px; font-family: var(--font-fun); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .obj-header { font: 700 1.02rem var(--font-fun); text-transform: none; letter-spacing: 0.2px; }
+
+/* Bloques plegables */
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .custom-details {
+    background: var(--j-panel); border: 2px solid var(--j-line); border-radius: 20px; box-shadow: var(--j-shadow);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .custom-details summary {
+    font: 700 1.02rem var(--font-fun); color: var(--j-title); padding: 13px 16px; text-transform: none;
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .custom-details summary::after { color: var(--accent); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .details-content { border-top: 2px dashed var(--bg-hover); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .concepts-list li { font-size: 0.86rem; }
+
+/* Botón y panel de tema */
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .theme-gear-btn {
+    width: 42px; height: 42px; background: var(--j-panel); border: 2px solid var(--j-line); color: var(--j-title);
+    border-radius: 50%; box-shadow: 0 4px 0 var(--j-sombra);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .theme-gear-btn:hover,
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .theme-gear-btn.is-open { border-color: var(--accent); color: var(--accent); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .theme-panel {
+    background: var(--j-panel); border: 2px solid var(--j-line); border-radius: 18px; box-shadow: var(--j-shadow);
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .theme-panel-title { font: 600 0.78rem var(--font-fun); color: var(--text-muted); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .theme-opt {
+    border: 2px solid transparent; border-radius: 12px; color: var(--text-main); font: 600 0.92rem var(--font-fun); min-height: 38px;
+}
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .theme-opt:hover { background: var(--j-panel-2); border-color: var(--j-line); }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .theme-opt.active { background: transparent; border-color: var(--accent); color: var(--j-title); }
+.dark-sw  { background: linear-gradient(135deg, #154a70 50%, #00c8ff 50%) !important; border: 0 !important; }
+.light-sw { background: linear-gradient(135deg, #eef5fb 50%, #0369a1 50%) !important; border: 1px solid #a9c6de !important; }
+
+/* Foco visible */
+html:not([data-theme="contrast"]):not([data-theme="marca"]) button:focus-visible,
+html:not([data-theme="contrast"]):not([data-theme="marca"]) select:focus-visible,
+html:not([data-theme="contrast"]):not([data-theme="marca"]) summary:focus-visible,
+html:not([data-theme="contrast"]):not([data-theme="marca"]) input[type="range"]:focus-visible {
+    outline: 3px solid var(--accent); outline-offset: 3px;
+}
+
+/* Pequeñas animaciones */
+@keyframes aparece { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .section,
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .custom-details { animation: aparece 0.4s ease both; }
+@keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .float-badge.bump,
+html:not([data-theme="contrast"]):not([data-theme="marca"]) .compare-result.bump { animation: bump 0.45s ease; }
+@media (prefers-reduced-motion: reduce) {
+    html:not([data-theme="contrast"]):not([data-theme="marca"]) * { animation: none !important; transition: none !important; }
+}

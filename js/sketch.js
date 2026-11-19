@@ -44,27 +44,41 @@ let sharedVal = 1;        // L (mismo volumen) o kg (misma masa)
 // ── Tema canvas ────────────────────────────────────────────
 let TH;
 const CANVAS_THEMES = {
+  // Pizarra: azules de SimulaCiencia con el estilo del juego «Carga cero»
   dark: {
-    bg:      [12,  14,  20 ],
-    panel:   [18,  22,  30 ],
-    text:    [208, 216, 232],
-    muted:   [88,  108, 134],
+    bg:      [17,  49,  79 ],
+    panel:   [21,  57,  90 ],
+    text:    [238, 247, 255],
+    muted:   [181, 211, 236],
     accent:  [0,   200, 255],
-    border:  [38,  48,  64 ],
-    grid:    [20,  26,  38 ],
-    water:   [55,  130, 215],
-    warning: [240, 168, 50 ],
+    border:  [45,  105, 150],
+    grid:    [28,  67,  102],
+    water:   [80,  170, 255],
+    warning: [255, 216, 74 ],
+    colA:    [127, 184, 255],
+    colB:    [255, 162, 90 ],
+    title:   [255, 255, 255],
+    ink:     [7,   26,  43 ],
+    metal:   [150, 185, 215],
+    fun:     true,
   },
+  // Día: claro sin llegar a blanco
   light: {
-    bg:      [218, 224, 240],
-    panel:   [240, 243, 252],
-    text:    [26,  32,  52 ],
-    muted:   [105, 120, 155],
-    accent:  [0,   136, 204],
-    border:  [178, 188, 214],
-    grid:    [205, 214, 234],
-    water:   [40,  100, 200],
-    warning: [192, 128, 32 ],
+    bg:      [238, 245, 251],
+    panel:   [247, 251, 255],
+    text:    [19,  48,  74 ],
+    muted:   [63,  95,  122],
+    accent:  [3,   105, 161],
+    border:  [169, 198, 222],
+    grid:    [211, 226, 239],
+    water:   [3,   105, 161],
+    warning: [180, 83,  9  ],
+    colA:    [31,  95,  191],
+    colB:    [194, 65,  12 ],
+    title:   [11,  34,  54 ],
+    ink:     [19,  48,  74 ],
+    metal:   [111, 139, 163],
+    fun:     true,
   },
   contrast: {
     bg:      [0,   0,   0  ],
@@ -101,6 +115,10 @@ const COL_B = [247, 130, 60 ];
 //  p5 lifecycle
 // ============================================================
 function setup() {
+  if (document.fonts) document.fonts.load('600 12px Fredoka');
+  // Doble resolución: en el estilo juego el lienzo crece hasta llenar la zona
+  // de la simulación (pizarra digital) sin verse borroso
+  pixelDensity(Math.max(2, displayDensity()));
   let cnv = createCanvas(760, 520);
   cnv.parent('canvas-container');
   frameRate(40);
@@ -115,11 +133,155 @@ function draw() {
   let t = document.documentElement.getAttribute('data-theme') || 'dark';
   TH = CANVAS_THEMES[t] || CANVAS_THEMES.dark;
 
-  background(...TH.bg);
-  drawGrid();
+  if (TH.fun) {
+    // Marco del tablero dibujado dentro del lienzo: escala con él (móvil)
+    clear();
+    stroke(...TH.border); strokeWeight(2); fill(...TH.bg);
+    rect(1, 1, width - 2, height - 2, 30);
+    noStroke();
+    textFont('Fredoka');
+  } else {
+    background(...TH.bg);
+    drawGrid();
+    textFont('sans-serif');
+  }
 
   if (simMode === 'single') drawSingleMode();
   else                      drawCompareMode();
+  if (TH.fun) drawChispas();
+}
+
+// ============================================================
+//  Estilo juego: tarjetas con tinta, mascota y chispas
+// ============================================================
+const MOV_REDUCIDO = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FUENTE_TEXTO = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+let mensajeMascota = '', etiquetaMascota = '', desdeMascota = -1e9, chispas = [];
+
+// Texto en tipo frase («Densidad (ρ)») en el estilo juego
+function frase(t) {
+  if (!TH.fun) return t;
+  // Las palabras de una letra (unidades como «L») se quedan como están
+  let l = t.split(' ').map(p => p.length === 1 ? p : p.toLocaleLowerCase()).join(' ');
+  return l.charAt(0).toLocaleUpperCase() + l.slice(1);
+}
+
+// Tarjeta redondeada con borde y sombra sólida de tinta
+function tarjeta(x, y, w, h, r) {
+  noStroke(); fill(...TH.ink); rect(x, y + 4, w, h, r);
+  stroke(...TH.border); strokeWeight(2); fill(...TH.panel);
+  rect(x, y, w, h, r);
+  noStroke();
+}
+
+function salto(t0) {
+  if (MOV_REDUCIDO) return 1;
+  let e = (millis() - t0) / 450;
+  if (e >= 1) return 1;
+  return 1 + 0.35 * sin(e * PI) * (1 - e);
+}
+
+function lanzarChispas(x, y, col, n) {
+  if (MOV_REDUCIDO) return;
+  for (let i = 0; i < n; i++) {
+    let a = random(TWO_PI), v = random(1.5, 4);
+    chispas.push({ x, y, vx: cos(a) * v, vy: sin(a) * v - 1, vida: 1, col, r: random(3, 6), estrella: random() < 0.5 });
+  }
+}
+
+function drawChispas() {
+  drawingContext.save();
+  drawingContext.beginPath();
+  drawingContext.rect(10, 4, 130, 60);   // nunca salen de la zona de la mascota
+  drawingContext.clip();
+  for (let i = chispas.length - 1; i >= 0; i--) {
+    let c = chispas[i];
+    c.x += c.vx; c.y += c.vy; c.vy += 0.12; c.vida -= 0.04;
+    if (c.vida <= 0) { chispas.splice(i, 1); continue; }
+    noStroke(); fill(...c.col, 255 * c.vida);
+    if (c.estrella) estrella(c.x, c.y, c.r * 1.3, c.r * 0.5);
+    else ellipse(c.x, c.y, c.r * 2 * c.vida);
+  }
+  drawingContext.restore();
+}
+
+function estrella(x, y, r1, r2) {
+  beginShape();
+  for (let i = 0; i < 10; i++) {
+    let a = -HALF_PI + i * PI / 5, r = i % 2 ? r2 : r1;
+    vertex(x + cos(a) * r, y + sin(a) * r);
+  }
+  endShape(CLOSE);
+}
+
+// Mascota: partícula sonriente que dice el mensaje en un bocadillo
+function drawMascota(cx, cy, r, col) {
+  let bote = MOV_REDUCIDO ? 0 : sin(millis() / 260) * 1.5;
+  let parpadeo = millis() % 4200 > 4050;
+  push();
+  translate(cx, cy + bote);
+  let s = salto(desdeMascota);
+  scale(s, 2 - s);
+  noStroke(); fill(0, 0, 0, 45); ellipse(0, r + 3 - bote, r * 1.5, 5);
+  stroke(...TH.ink); strokeWeight(2.5); fill(...col);
+  ellipse(0, 0, r * 2);
+  noStroke(); fill(255, 255, 255, 150);
+  ellipse(-r * 0.42, -r * 0.45, r * 0.55, r * 0.35);
+  fill(...TH.ink);
+  if (parpadeo) {
+    stroke(...TH.ink); strokeWeight(2);
+    line(-r * 0.42, -r * 0.05, -r * 0.18, -r * 0.05); line(r * 0.18, -r * 0.05, r * 0.42, -r * 0.05);
+  } else {
+    ellipse(-r * 0.3, -r * 0.08, r * 0.2, r * 0.3); ellipse(r * 0.3, -r * 0.08, r * 0.2, r * 0.3);
+  }
+  noFill(); stroke(...TH.ink); strokeWeight(2.2);
+  arc(0, r * 0.18, r * 0.6, r * 0.45, 0.15 * PI, 0.85 * PI);
+  noStroke(); fill(255, 120, 150, 120);
+  ellipse(-r * 0.58, r * 0.22, r * 0.3); ellipse(r * 0.58, r * 0.22, r * 0.3);
+  pop();
+}
+
+// Franja superior: mascota + bocadillo con etiqueta y mensaje
+function drawBocadillo(tag, txt, col) {
+  let x = 14, y = 12, w = width - 28, h = 44;
+  if (tag + txt !== etiquetaMascota) {
+    if (etiquetaMascota) lanzarChispas(x + 22, y + h / 2, col, 12);
+    etiquetaMascota = tag + txt; desdeMascota = millis();
+  }
+  // En el tema Día los colores son oscuros: la mascota, más clara
+  let cm = TH === CANVAS_THEMES.light ? col.map(v => lerp(v, 255, 0.45)) : col;
+  drawMascota(x + 22, y + h / 2, 19, cm);
+
+  let bx = x + 54, my = y + h / 2;
+  noStroke(); fill(...TH.ink); rect(bx, y + 3, w - 54, h, 16);
+  stroke(...TH.border); strokeWeight(2); fill(...TH.panel);
+  triangle(bx - 10, my, bx + 4, my - 8, bx + 4, my + 8);
+  rect(bx, y, w - 54, h, 16);
+  noStroke(); fill(...TH.panel);
+  triangle(bx - 7, my, bx + 3, my - 6, bx + 3, my + 6);
+
+  let tx = bx + 14;
+  if (tag) {
+    textStyle(BOLD); textSize(15);
+    let tw = textWidth(tag) + 24;
+    push();
+    translate(bx + 12 + tw / 2, my);
+    scale(salto(desdeMascota));
+    noStroke(); fill(...TH.ink); rect(-tw / 2, -12, tw, 26, 13);
+    fill(...col); rect(-tw / 2, -14, tw, 26, 13);
+    let claro = (col[0] * 0.299 + col[1] * 0.587 + col[2] * 0.114) > 140;
+    if (claro) fill(...TH.ink); else fill(255);
+    textAlign(CENTER, CENTER);
+    text(tag, 0, -1);
+    pop();
+    textStyle(NORMAL);
+    tx = bx + 12 + tw + 12;
+  }
+  textFont(FUENTE_TEXTO);
+  fill(...TH.text); textSize(15); textAlign(LEFT, CENTER); textLeading(17);
+  text(txt, tx, y + 2, x + w - tx - 12, h - 4);
+  textFont('Fredoka');
+  textAlign(LEFT, BASELINE);
 }
 
 // ============================================================
@@ -190,12 +352,12 @@ function drawBox2D(cx, cy, bw, bh, mat, alpha) {
   let col = mat.col;
   alpha = alpha !== undefined ? alpha : 255;
   let x = cx - bw/2, y = cy - bh/2;
-  let r = 4;
+  let r = TH.fun ? 8 : 4;
 
   // Sombra
   noStroke();
-  fill(0, 0, 0, 38);
-  rect(x + 5, y + 8, bw, bh, r);
+  if (TH.fun) { fill(...TH.ink); rect(x, y + 5, bw, bh, r); }
+  else { fill(0, 0, 0, 38); rect(x + 5, y + 8, bw, bh, r); }
 
   // Bloque base
   fill(...col, alpha);
@@ -227,8 +389,8 @@ function drawBox2D(cx, cy, bw, bh, mat, alpha) {
 
   // Borde
   noFill();
-  stroke(max(0, col[0]-50), max(0, col[1]-50), max(0, col[2]-50), 210);
-  strokeWeight(1.5);
+  if (TH.fun) { stroke(...TH.ink); strokeWeight(2.5); }
+  else { stroke(max(0, col[0]-50), max(0, col[1]-50), max(0, col[2]-50), 210); strokeWeight(1.5); }
   rect(x, y, bw, bh, r);
 
   stroke(255, 255, 255, 32);
@@ -440,17 +602,20 @@ function drawDensityDisplay(rho, matCol, cx, cy) {
   let col  = densityRGBColor(rho);
   let pw = 208, ph = 78;
 
-  fill(...TH.panel, 245);
-  stroke(...TH.border);
-  strokeWeight(1);
-  rect(cx-pw/2, cy-ph/2, pw, ph, 10);
+  if (TH.fun) tarjeta(cx-pw/2, cy-ph/2, pw, ph, 16);
+  else {
+    fill(...TH.panel, 245);
+    stroke(...TH.border);
+    strokeWeight(1);
+    rect(cx-pw/2, cy-ph/2, pw, ph, 10);
+  }
   noStroke();
 
   // Etiqueta
   fill(...TH.muted);
-  textSize(10);
+  textSize(TH.fun ? 12 : 10);
   textAlign(CENTER, TOP);
-  text(i18n.t('DENSIDAD  (ρ)'), cx, cy-ph/2+9);
+  text(frase(i18n.t('DENSIDAD  (ρ)')), cx, cy-ph/2+9);
 
   // Punto de color densidad
   fill(...col);
@@ -458,8 +623,8 @@ function drawDensityDisplay(rho, matCol, cx, cy) {
   ellipse(cx + pw/2 - 12, cy - ph/2 + 12, 9, 9);
 
   // Valor grande
-  fill(...matCol, 255);
-  textSize(30);
+  if (TH.fun) fill(...TH.title); else fill(...matCol, 255);
+  textSize(TH.fun ? 32 : 30);
   textStyle(BOLD);
   textAlign(CENTER, CENTER);
   text(str, cx, cy+3);
@@ -479,25 +644,28 @@ function drawDensityDisplay(rho, matCol, cx, cy) {
 // ============================================================
 function drawFormulaCanvas(mass, vol, rho, cx, cy) {
   let pw = 212, ph = 58;
-  fill(...TH.panel, 245);
-  stroke(...TH.border);
-  strokeWeight(1);
-  rect(cx-pw/2, cy-ph/2, pw, ph, 8);
+  if (TH.fun) tarjeta(cx-pw/2, cy-ph/2, pw, ph, 16);
+  else {
+    fill(...TH.panel, 245);
+    stroke(...TH.border);
+    strokeWeight(1);
+    rect(cx-pw/2, cy-ph/2, pw, ph, 8);
+  }
   noStroke();
 
   fill(...TH.muted);
-  textSize(10);
+  textSize(TH.fun ? 12 : 10);
   textAlign(CENTER, TOP);
-  text('ρ  =  m  /  V', cx, cy-ph/2+8);
+  text('ρ  =  m  /  V', cx, cy-ph/2+(TH.fun ? 6 : 8));
 
-  fill(...TH.accent);
-  textSize(11.5);
+  fill(...(TH.fun ? TH.title : TH.accent));
+  textSize(TH.fun ? 14 : 11.5);
   textAlign(CENTER, CENTER);
   let ms = fmtKg(mass);
   let vs = fmtL(vol);
   let rs = i18n.num(rho, 3)+' kg/L';
-  text(ms + '  ÷  ' + vs, cx, cy+2);
-  text('=  ' + rs, cx, cy+16);
+  text(ms + '  ÷  ' + vs, cx, cy + (TH.fun ? 3 : 2));
+  text('=  ' + rs, cx, cy + (TH.fun ? 20 : 16));
   textAlign(LEFT, BASELINE);
 }
 
@@ -506,13 +674,18 @@ function drawFormulaCanvas(mass, vol, rho, cx, cy) {
 // ============================================================
 function drawAnnotationPill(label, cx, cy) {
   let pw = 108, ph = 24;
-  fill(...TH.panel, 225);
-  stroke(...TH.border);
-  strokeWeight(1);
-  rect(cx-pw/2, cy-ph/2, pw, ph, 5);
+  if (TH.fun) {
+    noStroke(); fill(...TH.ink); rect(cx-pw/2, cy-ph/2+3, pw, ph, 12);
+    stroke(...TH.border); strokeWeight(2); fill(...TH.panel); rect(cx-pw/2, cy-ph/2, pw, ph, 12);
+  } else {
+    fill(...TH.panel, 225);
+    stroke(...TH.border);
+    strokeWeight(1);
+    rect(cx-pw/2, cy-ph/2, pw, ph, 5);
+  }
   noStroke();
   fill(...TH.text);
-  textSize(11);
+  textSize(TH.fun ? 13 : 11);
   textAlign(CENTER, CENTER);
   text(label, cx, cy);
   textAlign(LEFT, BASELINE);
@@ -529,10 +702,9 @@ function drawDensityBar(x, y, w, h, markers) {
     fill(...col, 200);
     rect(x+i, y, 1, h);
   }
-  stroke(...TH.border);
-  strokeWeight(1);
   noFill();
-  rect(x, y, w, h, 2);
+  if (TH.fun) { stroke(...TH.ink); strokeWeight(2.5); rect(x, y, w, h, 4); }
+  else { stroke(...TH.border); strokeWeight(1); rect(x, y, w, h, 2); }
   noStroke();
 
   // Línea del agua
@@ -544,16 +716,16 @@ function drawDensityBar(x, y, w, h, markers) {
   lineDash([]);
   noStroke();
   fill(...TH.water, 200);
-  textSize(8.5);
+  textSize(TH.fun ? 11 : 8.5);
   textAlign(CENTER, TOP);
-  text(i18n.t('agua\n1,0'), wx, y+h+3);
+  text(TH.fun ? i18n.t('agua\n1,0').replace('\n', ' ') : i18n.t('agua\n1,0'), wx, y+h+3);
 
   // Los que flotan quedan apretados en el primer tramo (0–1): se rotula dentro
   // de la barra a qué lado del agua está cada grupo.
   fill(255, 255, 255, 40);
   rect(x, y, wx - x, h);
   fill(255);
-  textSize(9);
+  textSize(TH.fun ? 11 : 9);
   textStyle(BOLD);
   textAlign(CENTER, CENTER);
   text(i18n.t('flotan'), (x + wx) / 2, y + h / 2);
@@ -563,7 +735,7 @@ function drawDensityBar(x, y, w, h, markers) {
 
   // Escala
   fill(...TH.muted);
-  textSize(9);
+  textSize(TH.fun ? 11 : 9);
   textAlign(LEFT, TOP);
   text('0', x, y+h+3);
   textAlign(RIGHT, TOP);
@@ -573,10 +745,11 @@ function drawDensityBar(x, y, w, h, markers) {
   for (let m of markers) {
     let px = x + constrain(m.rho / MAX_RHO, 0, 1) * w;
     fill(...m.col);
+    if (TH.fun) { stroke(...TH.ink); strokeWeight(1.5); strokeJoin(ROUND); } else noStroke();
+    triangle(px, y-3, px-6, y-12, px+6, y-12);
     noStroke();
-    triangle(px, y-3, px-5, y-11, px+5, y-11);
     fill(...TH.text);
-    textSize(9.5);
+    textSize(TH.fun ? 13 : 9.5);
     textAlign(CENTER, BOTTOM);
     text(i18n.num(m.rho, 2), px, y-12);
   }
@@ -644,6 +817,12 @@ function drawSingleMode() {
   let s = getSingle();
   let { bw, bh } = boxSize(s.vol);
   let bx = width * 0.275, by = height * 0.465;
+  if (TH.fun) {
+    bw *= 0.85; bh *= 0.85; by = 252;
+    drawBocadillo(i18n.t(s.mat.name), mensajeMascota, s.mat.col);
+    tarjeta(14, 68, 390, 372, 20);
+    tarjeta(414, 68, 332, 372, 20);
+  }
 
   // ── Objeto ──
   drawBox2D(bx, by, bw, bh, s.mat);
@@ -660,47 +839,60 @@ function drawSingleMode() {
   textSize(13);
   textStyle(BOLD);
   textAlign(CENTER, TOP);
-  text(i18n.t(s.mat.name).toUpperCase(), bx, by + bh/2 + 40);
+  text(TH.fun ? i18n.t(s.mat.name) : i18n.t(s.mat.name).toUpperCase(), bx, by + bh/2 + 40);
   textStyle(NORMAL);
 
   // ── Panel derecho ──
-  let rx = width * 0.655 + 20;
+  // En el estilo juego, centradas en su tablero (x 414–746)
+  let rx = TH.fun ? 414 + 332 / 2 : width * 0.655 + 20;
 
   // Título zona derecha
-  fill(...TH.muted);
-  textSize(9.5);
-  textAlign(CENTER, TOP);
-  text(i18n.t('ANÁLISIS DEL MATERIAL'), rx, 14);
+  let ys = TH.fun ? [146, 264, 376] : [108, 252, 372];
+  if (TH.fun) {
+    noStroke(); fill(...TH.muted); ellipse(432, 88, 8);
+    fill(...TH.title); textSize(15); textStyle(BOLD); textAlign(LEFT, CENTER);
+    text(frase(i18n.t('ANÁLISIS DEL MATERIAL')), 442, 88);
+    textStyle(NORMAL);
+  } else {
+    fill(...TH.muted);
+    textSize(9.5);
+    textAlign(CENTER, TOP);
+    text(i18n.t('ANÁLISIS DEL MATERIAL'), rx, 14);
+  }
 
   // Densidad grande
-  drawDensityDisplay(s.rho, s.mat.col, rx, 108);
+  drawDensityDisplay(s.rho, s.mat.col, rx, ys[0]);
 
   // Masa de cada litro (la densidad, vista como masa de un cubo de 1 L)
-  drawUnitCube(s.mat, s.rho, rx, 252);
+  drawUnitCube(s.mat, s.rho, rx, ys[1]);
 
   // Fórmula
-  drawFormulaCanvas(s.mass, s.vol, s.rho, rx, 372);
+  drawFormulaCanvas(s.mass, s.vol, s.rho, rx, ys[2]);
 
   textAlign(LEFT, BASELINE);
 
   // Barra densidad
-  drawDensityBar(28, height-28, width-56, 13, [{ rho: s.rho, col: s.mat.col }]);
+  drawDensityBar(28, height - (TH.fun ? 44 : 28), width-56, 13, [{ rho: s.rho, col: s.mat.col }]);
 }
 
 // Cubo de 1 L (10 cm de lado) del material con su masa: la densidad leída como
 // «cuántos kilogramos tiene cada litro».
 function drawUnitCube(mat, rho, cx, cy) {
   let pw = 208, ph = 96;
-  fill(...TH.panel, 245);
-  stroke(...TH.border);
-  strokeWeight(1);
-  rect(cx - pw/2, cy - ph/2, pw, ph, 10);
+  if (TH.fun) tarjeta(cx - pw/2, cy - ph/2, pw, ph, 16);
+  else {
+    fill(...TH.panel, 245);
+    stroke(...TH.border);
+    strokeWeight(1);
+    rect(cx - pw/2, cy - ph/2, pw, ph, 10);
+  }
   noStroke();
 
   // Cubo en perspectiva caballera
   let s = 40, dx = 14, dy = -11;
   let x = cx - pw/2 + 22, y = cy - s/2 + 4;
   let c = mat.col;
+  if (TH.fun) { stroke(...TH.ink); strokeWeight(2); strokeJoin(ROUND); }
   fill(min(255, c[0] + 28), min(255, c[1] + 28), min(255, c[2] + 28));
   quad(x, y, x + dx, y + dy, x + s + dx, y + dy, x + s, y);
   fill(max(0, c[0] - 40), max(0, c[1] - 40), max(0, c[2] - 40));
@@ -713,6 +905,7 @@ function drawUnitCube(mat, rho, cx, cy) {
   drawingContext.clip();
   drawMaterialTexture(mat, x, y, s, s);
   drawingContext.restore();
+  if (TH.fun) { noFill(); stroke(...TH.ink); strokeWeight(2); rect(x, y, s, s); noStroke(); }
 
   fill(...TH.muted);
   textSize(9.5);
@@ -722,10 +915,10 @@ function drawUnitCube(mat, rho, cx, cy) {
   // Texto: masa de ese litro
   let tx = cx + 34;
   textAlign(CENTER, TOP);
-  textSize(10);
-  text(i18n.t('MASA DE 1 L'), tx, cy - ph/2 + 16);
-  fill(...TH.text);
-  textSize(24);
+  textSize(TH.fun ? 12 : 10);
+  text(frase(i18n.t('MASA DE 1 L')), tx, cy - ph/2 + 16);
+  fill(...(TH.fun ? TH.title : TH.text));
+  textSize(TH.fun ? 28 : 24);
   textStyle(BOLD);
   textAlign(CENTER, CENTER);
   text(fmtKg(rho), tx, cy + 6);
@@ -783,12 +976,19 @@ function drawCompareMode() {
   let { sA, sB } = compareSizes(a, b);
 
   // Banner superior
-  drawBanner();
-
-  // ── Datos de cada objeto (arriba, fijos) ──
   let ax = BAL.cx - BAL.arm, bxx = BAL.cx + BAL.arm;
-  drawObjInfo(a, ax, 36, TH.colA || COL_A, 'A');
-  drawObjInfo(b, bxx, 36, TH.colB || COL_B, 'B');
+  if (TH.fun) {
+    let ban = textoBanner(), corte = ban.indexOf(' — ');
+    let tag = corte > 0 ? frase(ban.slice(0, corte)) : '';
+    let txt = corte > 0 ? ban.slice(corte + 3) : ban;
+    drawBocadillo(tag, txt, cmpSub === 'samevol' ? TH.accent : TH.warning);
+    drawObjInfo(a, ax, 62, TH.colA || COL_A, 'A');
+    drawObjInfo(b, bxx, 62, TH.colB || COL_B, 'B');
+  } else {
+    drawBanner();
+    drawObjInfo(a, ax, 36, TH.colA || COL_A, 'A');
+    drawObjInfo(b, bxx, 36, TH.colB || COL_B, 'B');
+  }
 
   // ── Brazo: se acerca suavemente al ángulo de equilibrio ──
   let target = balanceTarget(a.mass, b.mass);
@@ -798,14 +998,17 @@ function drawCompareMode() {
   drawBalance(a, b, sA, sB, beamAng);
 
   // Rótulo de lo que se mantiene igual
-  if (cmpSub === 'samevol') {
+  if (TH.fun) {
+    // el bocadillo ya dice qué se mantiene igual y las tarjetas dan los datos
+  } else if (cmpSub === 'samevol') {
     drawSharedBadge(i18n.t('Mismo volumen: {v}', { v: fmtL(sharedVal) }), TH.accent);
   } else {
     drawSharedBadge(i18n.t('Misma masa: {m}', { m: fmtKg(a.mass) }), TH.warning);
   }
 
   // Barra densidades
-  drawDensityBar(28, height-28, width-56, 13, [
+  // en «Comparar» la base de la balanza ocupa la franja de encima: barra más abajo
+  drawDensityBar(28, height - (TH.fun ? 32 : 28), width-56, 13, [
     { rho: a.rho, col: TH.colA || COL_A },
     { rho: b.rho, col: TH.colB || COL_B }
   ]);
@@ -816,13 +1019,14 @@ function drawBalance(a, b, sA, sB, ang) {
   let ex = cos(ang) * L, ey = sin(ang) * L;
   let lx = cx - ex, ly = py - ey;    // extremo A (izquierda)
   let rx = cx + ex, ry = py + ey;    // extremo B (derecha)
-  let metal = TH.muted;
+  let metal = TH.metal || TH.muted;
 
   // Base y columna
-  noStroke();
+  if (TH.fun) { stroke(...TH.ink); strokeWeight(2.5); strokeJoin(ROUND); } else noStroke();
   fill(...metal);
-  rect(cx - 70, 452, 140, 10, 4);
   quad(cx - 34, 452, cx + 34, 452, cx + 12, py + 6, cx - 12, py + 6);
+  rect(cx - 70, 452, 140, 10, 4);
+  noStroke();
 
   // Escala del fiel (arco con la marca de equilibrio)
   noFill();
@@ -844,16 +1048,18 @@ function drawBalance(a, b, sA, sB, ang) {
   line(cx, py, cx + sin(ang) * 70, py - cos(ang) * 70);
 
   // Brazo
+  strokeCap(ROUND);
+  if (TH.fun) { stroke(...TH.ink); strokeWeight(12); line(lx, ly, rx, ry); }
   stroke(...metal);
   strokeWeight(7);
-  strokeCap(ROUND);
   line(lx, ly, rx, ry);
   strokeCap(SQUARE);
 
   // Pivote
-  noStroke();
+  if (TH.fun) { stroke(...TH.ink); strokeWeight(2); } else noStroke();
   fill(...TH.accent);
-  ellipse(cx, py, 12, 12);
+  ellipse(cx, py, TH.fun ? 15 : 12);
+  noStroke();
   fill(...TH.bg);
   ellipse(cx, py, 4, 4);
 
@@ -863,16 +1069,18 @@ function drawBalance(a, b, sA, sB, ang) {
 }
 
 function drawPan(x, y, sz, mat, col) {
-  let metal = TH.muted;
+  let metal = TH.metal || TH.muted;
   let top = y - BAL.post;
   let pw = max(120, sz.bw + 26);
 
+  if (TH.fun) { stroke(...TH.ink); strokeWeight(8); strokeCap(ROUND); line(x, y, x, top); }
   stroke(...metal);
   strokeWeight(4);
   line(x, y, x, top);
-  noStroke();
+  if (TH.fun) { stroke(...TH.ink); strokeWeight(2); } else noStroke();
   fill(...metal);
-  rect(x - pw/2, top - 6, pw, 6, 3);
+  rect(x - pw/2, top - (TH.fun ? 8 : 6), pw, TH.fun ? 8 : 6, 4);
+  noStroke();
   fill(...col, 230);
   rect(x - pw/2, top - 6, 5, 6, 2);
 
@@ -895,10 +1103,14 @@ function drawLiquidInGlass(cx, cy, bw, bh, mat) {
   noStroke();
 }
 
-function drawBanner() {
-  let txt = cmpSub === 'samevol'
+function textoBanner() {
+  return cmpSub === 'samevol'
     ? i18n.t('MISMO VOLUMEN — ¿Hacia qué lado se inclina la balanza?')
     : i18n.t('MISMA MASA — La balanza está equilibrada. ¿Por qué no ocupan lo mismo?');
+}
+
+function drawBanner() {
+  let txt = textoBanner();
   let pw = 490, ph = 28;
   fill(...TH.panel, 235);
   stroke(...TH.border);
@@ -915,6 +1127,21 @@ function drawBanner() {
 }
 
 function drawObjInfo(obj, cx, topY, col, letter) {
+  if (TH.fun) {
+    let w = 200, h = 62, x = cx - w / 2;
+    tarjeta(x, topY, w, h, 16);
+    // Insignia redonda con la letra
+    stroke(...TH.ink); strokeWeight(2); fill(...col); ellipse(x + 22, topY + 22, 24);
+    noStroke(); fill(...TH.ink); textSize(13); textStyle(BOLD); textAlign(CENTER, CENTER);
+    text(letter, x + 22, topY + 21);
+    fill(...TH.title); textSize(14.5); textAlign(LEFT, CENTER);
+    text(i18n.t(obj.mat.name), x + 40, topY + 21);
+    textStyle(NORMAL);
+    fill(...TH.muted); textSize(12); textAlign(CENTER, CENTER);
+    text('ρ = ' + i18n.num(obj.rho, 2) + ' kg/L   m = ' + fmtKg(obj.mass) + '   V = ' + fmtL(obj.vol), cx, topY + 45);
+    textAlign(LEFT, BASELINE);
+    return;
+  }
   // Letra, nombre y densidad
   fill(...col);
   textSize(12.5);
@@ -1259,6 +1486,7 @@ function updateFloatBadge(rho, esAgua) {
   let el = document.getElementById('float-badge');
   if (!el) return;
   let r = i18n.num(rho, 2);
+  let antes = el.className;
   if (esAgua) {
     // «El agua queda en equilibrio en agua» no dice nada: es la referencia
     el.className = 'float-badge equilibrio';
@@ -1273,6 +1501,8 @@ function updateFloatBadge(rho, esAgua) {
     el.className = 'float-badge equilibrio';
     el.innerHTML = i18n.t('ρ = {r} kg/L ≈ 1 → <strong>equilibrio en agua</strong> ⇌', { r: r });
   }
+  mensajeMascota = el.textContent;
+  if (antes !== el.className && TH && TH.fun && !MOV_REDUCIDO) { void el.offsetWidth; el.classList.add('bump'); }
 }
 
 function updateCompareResult(rA, rB) {
