@@ -116,6 +116,9 @@ const COL_B = [247, 130, 60 ];
 // ============================================================
 function setup() {
   if (document.fonts) document.fonts.load('600 12px Fredoka');
+  // Doble resolución: en el estilo juego el lienzo crece hasta llenar la zona
+  // de la simulación (pizarra digital) sin verse borroso
+  pixelDensity(Math.max(2, displayDensity()));
   let cnv = createCanvas(760, 520);
   cnv.parent('canvas-container');
   frameRate(40);
@@ -259,7 +262,7 @@ function drawBocadillo(tag, txt, col) {
 
   let tx = bx + 14;
   if (tag) {
-    textStyle(BOLD); textSize(13.5);
+    textStyle(BOLD); textSize(15);
     let tw = textWidth(tag) + 24;
     push();
     translate(bx + 12 + tw / 2, my);
@@ -275,7 +278,7 @@ function drawBocadillo(tag, txt, col) {
     tx = bx + 12 + tw + 12;
   }
   textFont(FUENTE_TEXTO);
-  fill(...TH.text); textSize(13); textAlign(LEFT, CENTER); textLeading(16);
+  fill(...TH.text); textSize(15); textAlign(LEFT, CENTER); textLeading(17);
   text(txt, tx, y + 2, x + w - tx - 12, h - 4);
   textFont('Fredoka');
   textAlign(LEFT, BASELINE);
@@ -713,16 +716,16 @@ function drawDensityBar(x, y, w, h, markers) {
   lineDash([]);
   noStroke();
   fill(...TH.water, 200);
-  textSize(8.5);
+  textSize(TH.fun ? 11 : 8.5);
   textAlign(CENTER, TOP);
-  text(i18n.t('agua\n1,0'), wx, y+h+3);
+  text(TH.fun ? i18n.t('agua\n1,0').replace('\n', ' ') : i18n.t('agua\n1,0'), wx, y+h+3);
 
   // Los que flotan quedan apretados en el primer tramo (0–1): se rotula dentro
   // de la barra a qué lado del agua está cada grupo.
   fill(255, 255, 255, 40);
   rect(x, y, wx - x, h);
   fill(255);
-  textSize(9);
+  textSize(TH.fun ? 11 : 9);
   textStyle(BOLD);
   textAlign(CENTER, CENTER);
   text(i18n.t('flotan'), (x + wx) / 2, y + h / 2);
@@ -732,7 +735,7 @@ function drawDensityBar(x, y, w, h, markers) {
 
   // Escala
   fill(...TH.muted);
-  textSize(9);
+  textSize(TH.fun ? 11 : 9);
   textAlign(LEFT, TOP);
   text('0', x, y+h+3);
   textAlign(RIGHT, TOP);
@@ -746,7 +749,7 @@ function drawDensityBar(x, y, w, h, markers) {
     triangle(px, y-3, px-6, y-12, px+6, y-12);
     noStroke();
     fill(...TH.text);
-    textSize(9.5);
+    textSize(TH.fun ? 13 : 9.5);
     textAlign(CENTER, BOTTOM);
     text(i18n.num(m.rho, 2), px, y-12);
   }
@@ -815,10 +818,10 @@ function drawSingleMode() {
   let { bw, bh } = boxSize(s.vol);
   let bx = width * 0.275, by = height * 0.465;
   if (TH.fun) {
-    bw *= 0.9; bh *= 0.9; by = height * 0.5;
+    bw *= 0.85; bh *= 0.85; by = 252;
     drawBocadillo(i18n.t(s.mat.name), mensajeMascota, s.mat.col);
-    tarjeta(14, 68, 390, 398, 20);
-    tarjeta(414, 68, 332, 398, 20);
+    tarjeta(14, 68, 390, 384, 20);
+    tarjeta(414, 68, 332, 384, 20);
   }
 
   // ── Objeto ──
@@ -840,10 +843,11 @@ function drawSingleMode() {
   textStyle(NORMAL);
 
   // ── Panel derecho ──
-  let rx = width * 0.655 + 20;
+  // En el estilo juego, centradas en su tablero (x 414–746)
+  let rx = TH.fun ? 414 + 332 / 2 : width * 0.655 + 20;
 
   // Título zona derecha
-  let ys = TH.fun ? [146, 268, 384] : [108, 252, 372];
+  let ys = TH.fun ? [146, 264, 376] : [108, 252, 372];
   if (TH.fun) {
     noStroke(); fill(...TH.muted); ellipse(432, 88, 8);
     fill(...TH.title); textSize(15); textStyle(BOLD); textAlign(LEFT, CENTER);
@@ -868,7 +872,7 @@ function drawSingleMode() {
   textAlign(LEFT, BASELINE);
 
   // Barra densidad
-  drawDensityBar(28, height-28, width-56, 13, [{ rho: s.rho, col: s.mat.col }]);
+  drawDensityBar(28, height - (TH.fun ? 44 : 28), width-56, 13, [{ rho: s.rho, col: s.mat.col }]);
 }
 
 // Cubo de 1 L (10 cm de lado) del material con su masa: la densidad leída como
@@ -1003,7 +1007,8 @@ function drawCompareMode() {
   }
 
   // Barra densidades
-  drawDensityBar(28, height-28, width-56, 13, [
+  // en «Comparar» la base de la balanza ocupa la franja de encima: barra más abajo
+  drawDensityBar(28, height - (TH.fun ? 32 : 28), width-56, 13, [
     { rho: a.rho, col: TH.colA || COL_A },
     { rho: b.rho, col: TH.colB || COL_B }
   ]);
