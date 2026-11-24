@@ -184,8 +184,9 @@ function soltar() {
     rotularBoton();
 }
 // Deja caer las muestras (si ya habían caído, vuelven arriba y caen otra vez)
+// Con la muestra arriba, la suelta; si ya cayó, la sube otra vez y espera al siguiente clic
 function dejarCaer() {
-    if (!esperando) soltar();
+    if (!esperando) { soltar(); return; }
     esperando = false;
     tSoltar = millis();
     rotularBoton();

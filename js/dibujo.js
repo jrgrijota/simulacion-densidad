@@ -428,6 +428,8 @@ function cubeta(c, est) {
         const f = 0.15 + rnd() * 0.7, g = rnd();
         forma(`M${x0 + w * f + DX * g} ${yA + DY * g} q${w * 0.03} -2.5 ${w * 0.06} 0`, { s: '#fff', sw: 1.5, op: 0.45 + rnd() * 0.4 });
     }
+    // aristas del fondo del vidrio, finas y claras: quedan detrás de las muestras
+    forma(`M${x0 + DX} ${yF + DY} V${y0 + DY} H${x1 + DX}`, { s: '#a8e4ea', sw: 1.6, op: 0.45 });
     // muestras (a mitad de profundidad); lo que va «encima» se pinta tras el agua del frente
     const encima = [];
     const yl = yA + DY * 0.35;
@@ -473,7 +475,6 @@ function cubeta(c, est) {
     linea(`M${x1} ${yA - 2} L${x1 + DX} ${yA + DY - 2}`, '#e6f7ff', 1.8, 0.8);
     encima.forEach(f => f());
     // vidrio: aristas del fondo finas y claras, laterales y borde superior con grosor
-    forma(`M${x0 + DX} ${yF + DY} V${y0 + DY} H${x1 + DX}`, { s: '#a8e4ea', sw: 1.6, op: 0.45 });
     const vid = (d, wi) => {
         forma(d, { s: ink, sw: wi + 3, lj: 'round', lc: 'round' });
         forma(d, { s: '#bdeef2', sw: wi, lj: 'round', lc: 'round' });
@@ -492,6 +493,11 @@ function cubeta(c, est) {
         forma(`M${x1 - w * 0.12} ${y0} L${x1 - w * 0.07} ${y0} L${x1 - w * 0.27} ${yF} L${x1 - w * 0.32} ${yF} Z`, { f: '#fff', op: 0.06 });
     });
     forma(R(x0 + 9, y0 + 14, 5, h * 0.4, 2.5), { f: '#fff', op: 0.45 });
+    // Lo que asoma por encima del canto delantero está delante del vidrio del fondo y de los laterales
+    est.muestras.forEach(mu => {
+        if (mu.yb - mu.s * (1 - PDY) >= y0 - 3) return;
+        recortar(`M${x0 - 60} ${y0 - 400} H${x1 + DX + 60} V${y0 - 3} H${x0 - 60} Z`, () => cubo(mu.k, mu.x, mu.yb, mu.s));
+    });
     if (!est.muestras.length || !est.marcas) return;
     // Mientras espera: flecha discontinua hacia el agua
     if (est.espera) est.muestras.forEach(mu => {
