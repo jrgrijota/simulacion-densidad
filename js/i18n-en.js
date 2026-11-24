@@ -142,4 +142,8 @@ window.I18N_EN = {
   "TARA": "TARE",
   "Misma masa: el menos denso ocupa más.": "Same mass: the less dense one takes up more space.",
   "Mismo volumen: el más denso tiene más masa.": "Same volume: the denser one has more mass.",
+  "sin muestra": "without sample",
+  "con muestra": "with sample",
+  "Soltar en el agua": "Drop into the water",
+  "Soltar la muestra en el agua (tecla S)": "Drop the sample into the water (S key)",
 };

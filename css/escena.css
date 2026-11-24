@@ -88,3 +88,10 @@ body.modo-comparar .only-objeto { display: none !important; }
     .album-tabla .mat-fila { grid-template-columns: repeat(3, 1fr); }
     .album-materiales .sello { width: 30px; height: 30px; }
 }
+
+/* Antes de soltar: el botón llama la atención (borde del acento y un pulso suave) */
+.boton-soltar.llamativo { border: 3px solid var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+    .boton-soltar.llamativo { animation: pulso-soltar 1.6s ease-in-out infinite; }
+}
+@keyframes pulso-soltar { 50% { box-shadow: 0 3px 0 var(--boton-sombra, #071a2b), 0 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent); } }

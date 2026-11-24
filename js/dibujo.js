@@ -493,12 +493,24 @@ function cubeta(c, est) {
     });
     forma(R(x0 + 9, y0 + 14, 5, h * 0.4, 2.5), { f: '#fff', op: 0.45 });
     if (!est.muestras.length || !est.marcas) return;
-    // marcas del nivel, fuera del vidrio y sin números
-    const xm = x1 + DX + 10, sep = Math.max(0, 15 - (base - yA));
-    forma(`M${xm} ${base + DY} h14`, { s: THEME.textDim, sw: 2, dash: [3, 3] });
-    T(xm + 18, base + DY + 5 + sep / 2, i18n.t('antes'), { fs: 12, c: THEME.textDim, sys: true });
-    linea(`M${xm} ${yA + DY} h14`, THEME.text, 2.2);
-    T(xm + 18, yA + DY + 1 - sep / 2, i18n.t('ahora'), { fs: 12, c: THEME.text, sys: true });
+    // Mientras espera: flecha discontinua hacia el agua
+    if (est.espera) est.muestras.forEach(mu => {
+        const cx = mu.x + mu.s / 2, y1 = mu.yb + 8, y2 = yA + DY * 0.35 - 6;
+        if (y2 - y1 < 14) return;
+        forma(`M${cx} ${y1} V${y2 - 6}`, { s: THEME.textDim, sw: 2, dash: [4, 4], lc: 'round' });
+        forma(`M${cx - 5} ${y2 - 8} L${cx} ${y2} L${cx + 5} ${y2 - 8}`, { s: THEME.textDim, sw: 2, lc: 'round', lj: 'round' });
+    });
+    // Marcas del nivel, fuera del vidrio y sin números. La del nivel sin muestra no se
+    // mueve nunca; la del nivel con la muestra aparece cuando el agua sube.
+    // A la izquierda (junto al vidrio del frente) si hay sitio; si no, a la derecha (junto al fondo)
+    const izq = est.marcasIzq, xm = izq ? x0 - 24 : x1 + DX + 10, yo = izq ? 0 : DY;
+    const xt = izq ? xm - 4 : xm + 18, al = izq ? 'end' : 'start';
+    forma(`M${xm} ${base + yo} h14`, { s: THEME.textDim, sw: 2, dash: [3, 3] });
+    T(xt, base + yo + 13, i18n.t('sin muestra'), { fs: 12, a: al, c: THEME.textDim, sys: true });
+    if (base - yA > 0.6) {
+        linea(`M${xm} ${yA + yo} h14`, THEME.text, 2.2);
+        T(xt, yA + yo - 4, i18n.t('con muestra'), { fs: 12, a: al, c: THEME.text, sys: true });
+    }
 }
 
 // ═════════ TIRA INFERIOR: regla de densidades en papel ═════════

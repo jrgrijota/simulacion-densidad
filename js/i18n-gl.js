@@ -142,4 +142,8 @@ window.I18N_GL = {
   "TARA": "TARA",
   "Misma masa: el menos denso ocupa más.": "Mesma masa: o menos denso ocupa máis.",
   "Mismo volumen: el más denso tiene más masa.": "Mesmo volume: o máis denso ten máis masa.",
+  "sin muestra": "sen mostra",
+  "con muestra": "con mostra",
+  "Soltar en el agua": "Soltar na auga",
+  "Soltar la muestra en el agua (tecla S)": "Soltar a mostra na auga (tecla S)",
 };

@@ -142,4 +142,8 @@ window.I18N_EU = {
   "TARA": "TARA",
   "Misma masa: el menos denso ocupa más.": "Masa bera: dentsitate txikienak leku gehiago hartzen du.",
   "Mismo volumen: el más denso tiene más masa.": "Bolumen bera: dentsoenak masa gehiago du.",
+  "sin muestra": "laginik gabe",
+  "con muestra": "laginarekin",
+  "Soltar en el agua": "Bota uretara",
+  "Soltar la muestra en el agua (tecla S)": "Lagina uretara bota (S tekla)",
 };

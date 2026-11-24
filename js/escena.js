@@ -39,7 +39,7 @@ function calcularEscena() {
         TANQUE = { x0: 506, y0: 122, w: 290, h: 296 };
         LEYENDA = { x: 662, y: 62 };
         ROTULO = { x: 662, y: 442, txt: '¿Flota o se hunde en agua?' };
-        SOLTAR = { x: 572, y: 490, w: 180 };
+        SOLTAR = { x: 562, y: 490, w: 200 };
         NOTA = { x: 662, y: 510 };
         PANEL = { x: 902, y: 30, w: 400, h: 480, compacto: false };
         SELLO_POS = { x: 1131, y: 456 };
@@ -50,7 +50,7 @@ function calcularEscena() {
         MANDOS = { x: 18, y: cmp ? 352 : 338, w: 334 };
         PANEL = { x: 0, y: 516, w: 370, h: 460, compacto: true };
         TARJETAS = [{ x: 0, y: 0, w: 370, h: 500 }, { x: 0, y: 992, w: 370, h: 380 }];
-        TANQUE = { x0: 30, y0: 1066, w: 240, h: 232 };
+        TANQUE = { x0: 16, y0: 1066, w: 222, h: 232 };
         LEYENDA = { x: 185, y: 1026 };
         ROTULO = { x: 128, y: 1320, w: 226, txt: '¿Flota o se hunde?' };
         SOLTAR = { x: 246, y: 1316, w: 114 };
@@ -140,10 +140,18 @@ let CAIDA = [], ONDAS = [], BURBUJAS = [];
 let tSoltar = -1e9, selloInfo = null, ultimoRes = {};
 let brazo = { giro: 0, w: 0, quietoDesde: null, dado: false, tCambio: -1e9 };
 
+// Las muestras muy grandes se reducen en la cubeta: caben a lo ancho y esperan por encima del agua
 function escalaTanque(V) {
-    const s = lado(V);
-    return Math.min(1, TANQUE.w * 0.5 / s);
+    const s = lado(V), { DY, base } = geomCubeta(TANQUE);
+    const alto = (base + DY * 0.35 - 8) - (TARJETAS[TARJETAS.length - 1].y + 74);
+    return Math.min(1, TANQUE.w * 0.5 / s, alto / (s * (1 - PDY)));
 }
+// Altura a la que espera la muestra antes de soltarla (sin tocar el agua)
+function yEspera(s) {
+    const { DY, base } = geomCubeta(TANQUE), top = TARJETAS[TARJETAS.length - 1].y + 74;
+    return Math.min(Math.max(TANQUE.y0 - 14, top + s * (1 - PDY)), base + DY * 0.35 - 8);
+}
+let esperando = true;
 function eComparar(c) { return Math.min(1, 78 / Math.max(lado(c.A.V), lado(c.B.V))); }
 // Lado y posición en la cubeta de cada muestra
 function geometriaMuestras() {
@@ -159,7 +167,9 @@ function geometriaMuestras() {
         return { s, x: TANQUE.x0 + TANQUE.w * (i ? 0.75 : 0.3) - 0.67 * s + DX * 0.35 };
     });
 }
+// Coloca las muestras sobre la cubeta, quietas, hasta que se pulse «Soltar»
 function soltar() {
+    esperando = true;
     tSoltar = millis();
     ONDAS = []; BURBUJAS = [];
     selloInfo = null; ultimoRes = {};
@@ -168,9 +178,23 @@ function soltar() {
     const geo = geometriaMuestras();
     CAIDA = lista.map((mu, i) => {
         const s = geo[i].s, top = TARJETAS[TARJETAS.length - 1].y + 74;
-        return { k: mu.k, r: mu.r, V: mu.V, l: mu.l, yb: Math.max(TANQUE.y0 - 14, top + s * (1 - PDY)), v: 0, f: 0, quieto: null, dentro: false, res: null, fuera: mu.k === 'agua' };
+        return { k: mu.k, r: mu.r, V: mu.V, l: mu.l, yb: yEspera(s), v: 0, f: 0, quieto: null, dentro: false, res: null, fuera: mu.k === 'agua' };
     });
     $('btn-soltar').hidden = S.modo === 'objeto' && S.mat === 'agua';
+    rotularBoton();
+}
+// Deja caer las muestras (si ya habían caído, vuelven arriba y caen otra vez)
+function dejarCaer() {
+    if (!esperando) soltar();
+    esperando = false;
+    tSoltar = millis();
+    rotularBoton();
+}
+function rotularBoton() {
+    const b = $('btn-soltar');
+    b.querySelector('.ico-soltar').textContent = esperando ? '↓' : '↻';
+    b.querySelector('.solo-ancho').textContent = i18n.t(esperando ? 'Soltar en el agua' : 'Soltar otra vez');
+    b.classList.toggle('llamativo', esperando);
 }
 // Las muestras siguen siendo las mismas aunque cambie su tamaño o su masa
 function actualizarMuestras() {
@@ -194,6 +218,7 @@ function pasoCaida(dt) {
     CAIDA.forEach((c, i) => {
         if (c.fuera) return;
         const s = geo[i].s;
+        if (esperando) { c.yb = yEspera(s); c.v = 0; c.f = 0; return; }
         const pasos = 4, h = dt / pasos;
         for (let p = 0; p < pasos; p++) {
             const f = constrain((c.yb - yl) / s, 0, 1);
@@ -437,9 +462,9 @@ function cubetaConAparicion(muestras, ondas, yA, aparece) {
         // Se pinta la cubeta sin muestras y luego con ellas, mezcladas por transparencia
         cubeta(TANQUE, { yA, muestras: [], ondas, burbujas: BURBUJAS, t: millis() / 1000, marcas: false });
         ctx.save(); ctx.globalAlpha *= aparece;
-        cubeta(TANQUE, { yA, muestras, ondas, burbujas: BURBUJAS, t: millis() / 1000, marcas: true });
+        cubeta(TANQUE, { yA, muestras, ondas, burbujas: BURBUJAS, t: millis() / 1000, marcas: true, espera: esperando, marcasIzq: !ESC_MOVIL });
         ctx.restore();
-    } else cubeta(TANQUE, { yA, muestras, ondas, burbujas: BURBUJAS, t: millis() / 1000, marcas: true });
+    } else cubeta(TANQUE, { yA, muestras, ondas, burbujas: BURBUJAS, t: millis() / 1000, marcas: true, espera: esperando, marcasIzq: !ESC_MOVIL });
 }
 
 // ── Mandos HTML ──────────────────────────────────────────────────
@@ -520,7 +545,7 @@ function setupControles() {
     document.querySelectorAll('[data-cmp]').forEach(b => b.addEventListener('click', () => { S.cmp = b.dataset.cmp; mostrarValores(); soltar(); }));
     $('sel-a').addEventListener('change', (e) => { S.A = e.target.value; mostrarValores(); soltar(); });
     $('sel-b').addEventListener('change', (e) => { S.B = e.target.value; mostrarValores(); soltar(); });
-    $('btn-soltar').addEventListener('click', soltar);
+    $('btn-soltar').addEventListener('click', dejarCaer);
     $('check-pantalla').addEventListener('change', (e) => {
         try {
             if (e.target.checked && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
@@ -547,7 +572,7 @@ function setupControles() {
     document.addEventListener('keydown', (e) => {
         if (e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.target.closest('button, input, select, textarea, summary, a')) return;
-        if ((e.key === 's' || e.key === 'S') && !$('btn-soltar').hidden) soltar();
+        if ((e.key === 's' || e.key === 'S') && !$('btn-soltar').hidden) dejarCaer();
     });
     iniciarPopover('btn-ayuda', 'panel-ayuda');
     window.addEventListener('load', fitCanvas);

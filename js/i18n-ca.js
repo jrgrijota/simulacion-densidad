@@ -142,4 +142,8 @@ window.I18N_CA = {
   "TARA": "TARA",
   "Misma masa: el menos denso ocupa más.": "Mateixa massa: el menys dens ocupa més.",
   "Mismo volumen: el más denso tiene más masa.": "Mateix volum: el més dens té més massa.",
+  "sin muestra": "sense mostra",
+  "con muestra": "amb mostra",
+  "Soltar en el agua": "Deixa-la caure a l'aigua",
+  "Soltar la muestra en el agua (tecla S)": "Deixar caure la mostra a l'aigua (tecla S)",
 };
