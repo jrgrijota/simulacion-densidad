@@ -547,7 +547,7 @@ function elegirModo(m) {
     soltar();
 }
 function elegirMaterial(k) {
-    if (!MATS[k]) return;
+    if (!MATS[k] || k === 'agua') return;
     S.mat = k;
     mostrarValores();
     verMaterialElegido();
@@ -570,6 +570,7 @@ function setupControles() {
     document.querySelectorAll('[data-cmp]').forEach(b => b.addEventListener('click', () => { S.cmp = b.dataset.cmp; mostrarValores(); soltar(); }));
     $('sel-a').addEventListener('change', (e) => { S.A = e.target.value; mostrarValores(); soltar(); });
     $('sel-b').addEventListener('change', (e) => { S.B = e.target.value; mostrarValores(); soltar(); });
+    ['sel-a', 'sel-b'].forEach(id => $(id).addEventListener('change', (e) => { if (e.target.value === 'agua') retosSello('agua'); }));
     $('btn-soltar').addEventListener('click', dejarCaer);
     $('check-pantalla').addEventListener('change', (e) => {
         try {
@@ -626,7 +627,7 @@ function setup() {
         tema:     (v) => { const t = { simulaciencia: 'marca', marca: 'marca', claro: 'light', oscuro: 'dark', contraste: 'contrast' }[v];
                            const b = t && document.querySelector(`.theme-opt[data-theme="${t}"]`); if (b) b.click(); },
         modo:     (v) => { if (v === 'objeto' || v === 'comparar') S.modo = v; },
-        material: (v) => { const k = matUrl(v); if (k) S.mat = k; },
+        material: (v) => { const k = matUrl(v); if (k && k !== 'agua') S.mat = k; },   // el agua solo está en Comparar
         comparar: (v) => { if (v === 'masa' || v === 'volumen') S.cmp = v; },
         a:        (v) => { const k = matUrl(v); if (k && k !== 'pers') S.A = k; },
         b:        (v) => { const k = matUrl(v); if (k && k !== 'pers') S.B = k; },
@@ -644,7 +645,7 @@ function setup() {
     mostrarValores();
     soltar();
     requestAnimationFrame(verMaterialElegido);
-    if (S.mat === 'agua' && S.modo === 'objeto') retosSello('agua');
+    if (S.modo === 'comparar' && (S.A === 'agua' || S.B === 'agua')) retosSello('agua');
     fitCanvas();
 }
 function draw() {

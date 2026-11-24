@@ -56,7 +56,7 @@ window.I18N_EU = {
   "¿Borrar los retos y sellos conseguidos en este navegador?": "Nabigatzaile honetan lortutako erronkak eta zigiluak ezabatu?",
   "Sí, borrar": "Bai, ezabatu",
   "Cancelar": "Utzi",
-  "Cada sello se gana al soltar el material en la cubeta y esperar a que se quede quieto. El agua es la referencia: su sello se gana al elegirla.": "Zigilu bakoitza materiala ontzira bota eta geldirik geratu arte itxarotean irabazten da. Ura da erreferentzia: haren zigilua aukeratzean irabazten da.",
+  "Cada sello se gana al soltar el material en la cubeta y esperar a que se quede quieto. El agua es la referencia: su sello se gana al ponerla en un plato en «Comparar».": "Zigilu bakoitza materiala ontzira bota eta geldirik geratu arte itxarotean irabazten da. Ura da erreferentzia: haren zigilua «Alderatu» moduan plater batean jartzean irabazten da.",
   "¡EQUILIBRADA!": "OREKAN!",
   "{m} kg {a} = {m} kg {b}": "{m} kg {a} = {m} kg {b}",
   "¡SE INCLINA HACIA {p}!": "{p} ALDERA MAKURTZEN DA!",

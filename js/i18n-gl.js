@@ -56,7 +56,7 @@ window.I18N_GL = {
   "¿Borrar los retos y sellos conseguidos en este navegador?": "Borrar os retos e selos conseguidos neste navegador?",
   "Sí, borrar": "Si, borrar",
   "Cancelar": "Cancelar",
-  "Cada sello se gana al soltar el material en la cubeta y esperar a que se quede quieto. El agua es la referencia: su sello se gana al elegirla.": "Cada selo gáñase ao soltar o material na cubeta e agardar a que quede quieto. A auga é a referencia: o seu selo gáñase ao escollela.",
+  "Cada sello se gana al soltar el material en la cubeta y esperar a que se quede quieto. El agua es la referencia: su sello se gana al ponerla en un plato en «Comparar».": "Cada selo gáñase ao soltar o material na cubeta e agardar a que quede quieto. A auga é a referencia: o seu selo gáñase ao poñela nun prato en «Comparar».",
   "¡EQUILIBRADA!": "EQUILIBRADA!",
   "{m} kg {a} = {m} kg {b}": "{m} kg {a} = {m} kg {b}",
   "¡SE INCLINA HACIA {p}!": "INCLÍNASE CARA A {p}!",

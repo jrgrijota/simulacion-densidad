@@ -56,7 +56,7 @@ window.I18N_EN = {
   "¿Borrar los retos y sellos conseguidos en este navegador?": "Clear the challenges and stamps earned in this browser?",
   "Sí, borrar": "Yes, clear",
   "Cancelar": "Cancel",
-  "Cada sello se gana al soltar el material en la cubeta y esperar a que se quede quieto. El agua es la referencia: su sello se gana al elegirla.": "Each stamp is earned by dropping the material into the tank and waiting for it to stop moving. Water is the reference: its stamp is earned by choosing it.",
+  "Cada sello se gana al soltar el material en la cubeta y esperar a que se quede quieto. El agua es la referencia: su sello se gana al ponerla en un plato en «Comparar».": "Each stamp is earned by dropping the material into the tank and waiting for it to stop moving. Water is the reference: its stamp is earned by putting it on a pan in “Compare”.",
   "¡EQUILIBRADA!": "BALANCED!",
   "{m} kg {a} = {m} kg {b}": "{m} kg {a} = {m} kg {b}",
   "¡SE INCLINA HACIA {p}!": "IT TIPS TOWARDS {p}!",
