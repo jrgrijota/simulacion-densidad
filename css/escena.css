@@ -1,0 +1,117 @@
+/* ════════════════════════════════════════════════════
+   ESCENA PROPIA DE «DENSIDAD»
+   Lo común (cabecera, carril, botones, paneles, retos, mandos sobre el
+   lienzo, móvil) está en css/escena-comun.css, que se carga antes.
+════════════════════════════════════════════════════ */
+
+/* Lo que solo se ve en un modo, o con el objeto personalizado */
+body.modo-objeto .only-comparar { display: none !important; }
+body.modo-comparar .only-objeto { display: none !important; }
+
+/* Puntos de color de los materiales */
+.materiales [data-mat="corcho"] .punto { background: #d7bc94; }
+.materiales [data-mat="madera"] .punto { background: #b47a46; }
+.materiales [data-mat="hielo"] .punto  { background: #d6ecff; }
+.materiales [data-mat="agua"] .punto   { background: #3a9be0; }
+.materiales [data-mat="pet"] .punto    { background: #cbc6dc; }
+.materiales [data-mat="alum"] .punto   { background: #c7ced8; }
+.materiales [data-mat="hierro"] .punto { background: #7d8692; }
+.materiales [data-mat="cobre"] .punto  { background: #cf7a43; }
+.materiales [data-mat="plomo"] .punto  { background: #6c7380; }
+.materiales [data-mat="pers"] .punto   { background: #9b91d2; }
+.barra-sus .carril { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.carril.materiales .carril-btn { padding: 0 13px; }
+
+/* Muestras A y B de «Comparar»: botón de 40 px con la letra y el material */
+.sel-mat {
+    position: relative;
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 40px; padding: 0 12px 0 8px;
+    border: 1.5px solid var(--line); border-radius: 20px;
+    background: var(--panel);
+    box-shadow: 0 3px 0 var(--boton-sombra, #071a2b);
+    cursor: pointer;
+}
+.sel-mat:hover, .sel-mat:focus-within { border-color: var(--accent); }
+.sel-mat .letra {
+    display: inline-grid; place-items: center;
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid #071a2b; color: #071a2b;
+    font: 700 14px var(--font-fun);
+}
+.sel-mat.a .letra { background: #8cc8ff; }
+.sel-mat.b .letra { background: #ffb38a; }
+.sel-mat select {
+    appearance: none; -webkit-appearance: none;
+    border: 0; background: transparent; color: var(--title);
+    font: 600 15.5px var(--font-fun);
+    padding: 0 18px 0 0; cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: right 5px center, right 0 center;
+    background-size: 5px 5px; background-repeat: no-repeat;
+}
+.sel-mat select:focus { outline: none; }
+.sel-mat:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+.sel-mat select option { color: #0f172a; background: #fff; }
+
+/* ── Mandos de la muestra ───────────────────────────── */
+.mandos-densidad { gap: 0; }
+.mandos-densidad .fila-slider { height: calc(var(--u) * 22); }
+.mandos-densidad .slider-bounds { margin-bottom: calc(var(--u) * 8); }
+.mandos-densidad .nota-mando { margin-top: calc(var(--u) * 2); }
+
+/* ── «Soltar otra vez», bajo la cubeta ──────────────── */
+.boton-soltar {
+    position: absolute;
+    height: calc(var(--u) * 40);
+    font-size: calc(var(--u) * 15);
+    justify-content: center;
+    gap: calc(var(--u) * 6);
+}
+.boton-soltar[hidden] { display: none; }
+
+/* ── Álbum: nueve sellos de materiales ──────────────── */
+.album-mini.album-materiales { grid-template-columns: repeat(9, 1fr); gap: 6px; }
+.album-materiales .sello { width: 34px; height: 34px; font-size: .9rem; }
+.album-materiales .sello.ganado { color: #061523; font-weight: 700; }
+.album-materiales .sello.nuevo { box-shadow: 0 0 0 5px color-mix(in srgb, var(--change) 45%, transparent); }
+.album-tabla .mat-fila { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px 14px; }
+.album-tabla .mat-celda { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.album-tabla .mat-celda strong { color: var(--title); font: 600 1rem var(--font-fun); }
+.album-tabla .mat-celda small { color: var(--muted); }
+
+@media (max-width: 760px) {
+    .sel-mat { flex: 1 1 140px; min-width: 0; }
+    .sel-mat select { flex: 1; min-width: 0; width: auto; }
+    .barra-sus .carril.fijo { flex-basis: 100%; }
+    .barra-sus .carril.fijo .carril-btn { flex: 1; justify-content: center; }
+    .album-tabla .mat-fila { grid-template-columns: repeat(3, 1fr); }
+    .album-materiales .sello { width: 30px; height: 30px; }
+}
+
+/* Antes de soltar: el botón llama la atención (borde del acento y un pulso suave) */
+.boton-soltar.llamativo { border: 3px solid var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+    .boton-soltar.llamativo { animation: pulso-soltar 1.6s ease-in-out infinite; }
+}
+@keyframes pulso-soltar { 50% { box-shadow: 0 3px 0 var(--boton-sombra, #071a2b), 0 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent); } }
+
+/* ── Carrusel de materiales: si no caben, se desplazan con las flechas ── */
+.carrusel { position: relative; display: flex; align-items: center; min-width: 0; max-width: 100%; }
+.carrusel .carril.materiales { max-width: 100%; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; }
+.carrusel .carril.materiales::-webkit-scrollbar { display: none; }
+.carrusel.hay-der .carril.materiales { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 64px), transparent calc(100% - 18px)); mask-image: linear-gradient(90deg, #000 calc(100% - 64px), transparent calc(100% - 18px)); }
+.carrusel.hay-izq .carril.materiales { -webkit-mask-image: linear-gradient(90deg, transparent 18px, #000 64px); mask-image: linear-gradient(90deg, transparent 18px, #000 64px); }
+.carrusel.hay-izq.hay-der .carril.materiales { -webkit-mask-image: linear-gradient(90deg, transparent 18px, #000 64px, #000 calc(100% - 64px), transparent calc(100% - 18px)); mask-image: linear-gradient(90deg, transparent 18px, #000 64px, #000 calc(100% - 64px), transparent calc(100% - 18px)); }
+.flecha-carrusel {
+    position: absolute; top: 50%; z-index: 2;
+    width: 34px; height: 34px; margin-top: -17px; border-radius: 50%;
+    display: none; align-items: center; justify-content: center;
+    border: 2px solid var(--line); background: var(--panel); color: var(--title);
+    font: 700 22px/1 var(--font-fun); padding: 0 0 3px; cursor: pointer;
+    box-shadow: 0 3px 0 var(--boton-sombra, #071a2b);
+}
+.flecha-carrusel:hover { border-color: var(--accent); color: var(--accent); }
+.flecha-carrusel.izq { left: -4px; }
+.flecha-carrusel.der { right: -4px; }
+.carrusel.hay-izq .flecha-carrusel.izq, .carrusel.hay-der .flecha-carrusel.der { display: flex; }
