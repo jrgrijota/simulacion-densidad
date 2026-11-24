@@ -542,6 +542,7 @@ function frase() {
 function elegirModo(m) {
     if (m !== 'objeto' && m !== 'comparar') return;
     S.modo = m;
+    CAIDA = []; ONDAS = []; BURBUJAS = [];   // las muestras del otro modo ya no valen (el lienzo se redibuja al cambiar de tamaño)
     rehacerComposicion();
     mostrarValores();
     soltar();
