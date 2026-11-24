@@ -146,4 +146,6 @@ window.I18N_EU = {
   "con muestra": "laginarekin",
   "Soltar en el agua": "Bota uretara",
   "Soltar la muestra en el agua (tecla S)": "Lagina uretara bota (S tekla)",
+  "Ver los materiales anteriores": "Ikusi aurreko materialak",
+  "Ver más materiales": "Ikusi material gehiago",
 };

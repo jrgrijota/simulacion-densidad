@@ -468,6 +468,29 @@ function cubetaConAparicion(muestras, ondas, yA, aparece) {
     } else cubeta(TANQUE, { yA, muestras, ondas, burbujas: BURBUJAS, t: millis() / 1000, marcas: true, espera: esperando, marcasIzq: !ESC_MOVIL });
 }
 
+// Carrusel de materiales: flechas a los lados cuando la fila no cabe entera
+function iniciarCarrusel() {
+    const caja = document.querySelector('.carrusel'), fila = caja.querySelector('.carril');
+    const marcar = () => {
+        const max = fila.scrollWidth - fila.clientWidth;
+        caja.classList.toggle('hay-izq', fila.scrollLeft > 4);
+        caja.classList.toggle('hay-der', fila.scrollLeft < max - 4);
+    };
+    caja.querySelector('.izq').addEventListener('click', () => fila.scrollBy({ left: -fila.clientWidth * 0.7 }));
+    caja.querySelector('.der').addEventListener('click', () => fila.scrollBy({ left: fila.clientWidth * 0.7 }));
+    fila.addEventListener('scroll', marcar, { passive: true });
+    new ResizeObserver(marcar).observe(fila);
+    marcar();
+}
+// El material elegido siempre a la vista dentro del carrusel
+function verMaterialElegido() {
+    const fila = document.querySelector('.carril.materiales'), b = fila && fila.querySelector('[aria-checked="true"]');
+    if (!b || fila.scrollWidth <= fila.clientWidth) return;
+    const x = b.offsetLeft - fila.offsetLeft, izq = fila.scrollLeft, der = izq + fila.clientWidth;
+    if (x < izq + 40) fila.scrollTo({ left: x - 44 });
+    else if (x + b.offsetWidth > der - 40) fila.scrollTo({ left: x + b.offsetWidth - fila.clientWidth + 44 });
+}
+
 // ── Mandos HTML ──────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
 function pintarRelleno(sl) {
@@ -527,6 +550,7 @@ function elegirMaterial(k) {
     if (!MATS[k]) return;
     S.mat = k;
     mostrarValores();
+    verMaterialElegido();
     soltar();
     if (k === 'agua') { retosSello('agua'); selloInfo = null; }
 }
@@ -575,6 +599,7 @@ function setupControles() {
         if (e.target.closest('button, input, select, textarea, summary, a')) return;
         if ((e.key === 's' || e.key === 'S') && !$('btn-soltar').hidden) dejarCaer();
     });
+    iniciarCarrusel();
     iniciarPopover('btn-ayuda', 'panel-ayuda');
     window.addEventListener('load', fitCanvas);
     if (document.fonts) document.fonts.ready.then(() => { CACHE_CUBOS.clear(); mensajeCache.clave = ''; fitCanvas(); });
@@ -618,6 +643,7 @@ function setup() {
     calcularEscena(); resizeCanvas(CV_W, CV_H);
     mostrarValores();
     soltar();
+    requestAnimationFrame(verMaterialElegido);
     if (S.mat === 'agua' && S.modo === 'objeto') retosSello('agua');
     fitCanvas();
 }

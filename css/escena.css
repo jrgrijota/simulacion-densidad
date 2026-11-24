@@ -95,3 +95,23 @@ body.modo-comparar .only-objeto { display: none !important; }
     .boton-soltar.llamativo { animation: pulso-soltar 1.6s ease-in-out infinite; }
 }
 @keyframes pulso-soltar { 50% { box-shadow: 0 3px 0 var(--boton-sombra, #071a2b), 0 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent); } }
+
+/* ── Carrusel de materiales: si no caben, se desplazan con las flechas ── */
+.carrusel { position: relative; display: flex; align-items: center; min-width: 0; max-width: 100%; }
+.carrusel .carril.materiales { max-width: 100%; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; }
+.carrusel .carril.materiales::-webkit-scrollbar { display: none; }
+.carrusel.hay-der .carril.materiales { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 64px), transparent calc(100% - 18px)); mask-image: linear-gradient(90deg, #000 calc(100% - 64px), transparent calc(100% - 18px)); }
+.carrusel.hay-izq .carril.materiales { -webkit-mask-image: linear-gradient(90deg, transparent 18px, #000 64px); mask-image: linear-gradient(90deg, transparent 18px, #000 64px); }
+.carrusel.hay-izq.hay-der .carril.materiales { -webkit-mask-image: linear-gradient(90deg, transparent 18px, #000 64px, #000 calc(100% - 64px), transparent calc(100% - 18px)); mask-image: linear-gradient(90deg, transparent 18px, #000 64px, #000 calc(100% - 64px), transparent calc(100% - 18px)); }
+.flecha-carrusel {
+    position: absolute; top: 50%; z-index: 2;
+    width: 34px; height: 34px; margin-top: -17px; border-radius: 50%;
+    display: none; align-items: center; justify-content: center;
+    border: 2px solid var(--line); background: var(--panel); color: var(--title);
+    font: 700 22px/1 var(--font-fun); padding: 0 0 3px; cursor: pointer;
+    box-shadow: 0 3px 0 var(--boton-sombra, #071a2b);
+}
+.flecha-carrusel:hover { border-color: var(--accent); color: var(--accent); }
+.flecha-carrusel.izq { left: -4px; }
+.flecha-carrusel.der { right: -4px; }
+.carrusel.hay-izq .flecha-carrusel.izq, .carrusel.hay-der .flecha-carrusel.der { display: flex; }

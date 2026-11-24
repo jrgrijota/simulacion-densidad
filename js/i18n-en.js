@@ -146,4 +146,6 @@ window.I18N_EN = {
   "con muestra": "with sample",
   "Soltar en el agua": "Drop into the water",
   "Soltar la muestra en el agua (tecla S)": "Drop the sample into the water (S key)",
+  "Ver los materiales anteriores": "See previous materials",
+  "Ver más materiales": "See more materials",
 };

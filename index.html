@@ -86,7 +86,9 @@
     <!-- ── MATERIAL (Un objeto) · QUÉ SE FIJA Y QUÉ MUESTRAS (Comparar) ── -->
     <div class="barra-sus">
         <span class="barra-sus-label only-objeto" id="lbl-material">Material</span>
-        <div class="carril materiales only-objeto" role="radiogroup" aria-labelledby="lbl-material">
+        <div class="carrusel only-objeto">
+            <button type="button" class="flecha-carrusel izq" aria-label="Ver los materiales anteriores" tabindex="-1">‹</button>
+        <div class="carril materiales" role="radiogroup" aria-labelledby="lbl-material">
             <button type="button" class="carril-btn" data-mat="corcho" role="radio" aria-checked="false"><i class="punto"></i>Corcho</button>
             <button type="button" class="carril-btn" data-mat="madera" role="radio" aria-checked="true"><i class="punto"></i>Madera</button>
             <button type="button" class="carril-btn" data-mat="hielo" role="radio" aria-checked="false"><i class="punto"></i>Hielo</button>
@@ -97,6 +99,8 @@
             <button type="button" class="carril-btn" data-mat="cobre" role="radio" aria-checked="false"><i class="punto"></i>Cobre</button>
             <button type="button" class="carril-btn" data-mat="plomo" role="radio" aria-checked="false"><i class="punto"></i>Plomo</button>
             <button type="button" class="carril-btn" data-mat="pers" role="radio" aria-checked="false"><i class="punto"></i><span class="solo-ancho">Personalizado</span><span class="solo-movil">Propio</span></button>
+        </div>
+            <button type="button" class="flecha-carrusel der" aria-label="Ver más materiales" tabindex="-1">›</button>
         </div>
         <span class="barra-sus-label only-comparar" id="lbl-fijo">Fijo</span>
         <div class="carril fijo only-comparar" role="radiogroup" aria-labelledby="lbl-fijo">

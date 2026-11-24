@@ -146,4 +146,6 @@ window.I18N_CA = {
   "con muestra": "amb mostra",
   "Soltar en el agua": "Deixa-la caure a l'aigua",
   "Soltar la muestra en el agua (tecla S)": "Deixar caure la mostra a l'aigua (tecla S)",
+  "Ver los materiales anteriores": "Veure els materials anteriors",
+  "Ver más materiales": "Veure més materials",
 };

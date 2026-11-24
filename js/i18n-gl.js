@@ -146,4 +146,6 @@ window.I18N_GL = {
   "con muestra": "con mostra",
   "Soltar en el agua": "Soltar na auga",
   "Soltar la muestra en el agua (tecla S)": "Soltar a mostra na auga (tecla S)",
+  "Ver los materiales anteriores": "Ver os materiais anteriores",
+  "Ver más materiales": "Ver máis materiais",
 };
