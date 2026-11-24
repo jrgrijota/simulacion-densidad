@@ -81,8 +81,8 @@ body.modo-comparar .only-objeto { display: none !important; }
 .album-tabla .mat-celda small { color: var(--muted); }
 
 @media (max-width: 760px) {
-    .sel-mat { flex: 1; min-width: 0; }
-    .sel-mat select { min-width: 0; width: 100%; }
+    .sel-mat { flex: 1 1 140px; min-width: 0; }
+    .sel-mat select { flex: 1; min-width: 0; width: auto; }
     .barra-sus .carril.fijo { flex-basis: 100%; }
     .barra-sus .carril.fijo .carril-btn { flex: 1; justify-content: center; }
     .album-tabla .mat-fila { grid-template-columns: repeat(3, 1fr); }
